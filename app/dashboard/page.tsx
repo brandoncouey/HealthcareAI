@@ -31,7 +31,7 @@ import {
   Zap,
 } from "lucide-react"
 
-import {Button} from "@/app/components/ui/button";
+import { Button } from "@/app/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { Progress } from "@/app/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs"
@@ -41,8 +41,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
 import { Slider } from "@/app/components/ui/slider"
 import { Switch } from "@/app/components/ui/switch"
 import { Label } from "@/app/components/ui/label"
+import Image from "next/image"
 
-export default function Page() {
+export default function Dashboard() {
   const [theme, setTheme] = useState<"dark" | "light">("dark")
   const [systemStatus, setSystemStatus] = useState(85)
   const [cpuUsage, setCpuUsage] = useState(42)
@@ -107,8 +108,8 @@ export default function Page() {
       color: string
 
       constructor() {
-        this.x = Math.random() * canvas.width
-        this.y = Math.random() * canvas.height
+        this.x = Math.random() * (canvas?.width || 0)
+        this.y = Math.random() * (canvas?.height || 0)
         this.size = Math.random() * 3 + 1
         this.speedX = (Math.random() - 0.5) * 0.5
         this.speedY = (Math.random() - 0.5) * 0.5
@@ -119,10 +120,12 @@ export default function Page() {
         this.x += this.speedX
         this.y += this.speedY
 
-        if (this.x > canvas.width) this.x = 0
-        if (this.x < 0) this.x = canvas.width
-        if (this.y > canvas.height) this.y = 0
-        if (this.y < 0) this.y = canvas.height
+        if (canvas) {
+          if (this.x > canvas.width) this.x = 0
+          if (this.x < 0) this.x = canvas.width
+          if (this.y > canvas.height) this.y = 0
+          if (this.y < 0) this.y = canvas.height
+        }
       }
 
       draw() {
@@ -216,10 +219,13 @@ export default function Page() {
           {/* Header */}
           <header className="flex items-center justify-between py-4 border-b border-slate-700/50 mb-6">
             <div className="flex items-center space-x-2">
-              <Hexagon className="h-8 w-8 text-cyan-500" />
-              <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              NEXUS OS
-            </span>
+              <Image 
+                src="/logo.svg" 
+                alt="Exponential AI Tech Logo" 
+                width={40} 
+                height={40} 
+                className="h-10 w-auto"
+              />
             </div>
 
             <div className="flex items-center space-x-6">
@@ -280,7 +286,7 @@ export default function Page() {
               <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm h-full">
                 <CardContent className="p-4">
                   <nav className="space-y-2">
-                    <NavItem icon={Command} label="Page" active />
+                    <NavItem icon={Command} label="Dashboard" active />
                     <NavItem icon={Activity} label="Diagnostics" />
                     <NavItem icon={Database} label="Data Center" />
                     <NavItem icon={Globe} label="Network" />
@@ -783,7 +789,7 @@ function NavItem({ icon: Icon, label, active }: { icon: LucideIcon; label: strin
   return (
       <Button
           variant="ghost"
-          className={`w-full justify-start ${active ? "bg-slate-800/70 text-cyan-400" : "text-slate-400 hover:text-slate-100"}`}
+          className={`dashboard-nav-item ${active ? "active" : ""}`}
       >
         <Icon className="mr-2 h-4 w-4" />
         {label}
@@ -796,26 +802,26 @@ function StatusItem({ label, value, color }: { label: string; value: number; col
   const getColor = () => {
     switch (color) {
       case "cyan":
-        return "from-cyan-500 to-blue-500"
+        return "dashboard-progress-fill cyan"
       case "green":
-        return "from-green-500 to-emerald-500"
+        return "dashboard-progress-fill green"
       case "blue":
-        return "from-blue-500 to-indigo-500"
+        return "dashboard-progress-fill blue"
       case "purple":
-        return "from-purple-500 to-pink-500"
+        return "dashboard-progress-fill purple"
       default:
-        return "from-cyan-500 to-blue-500"
+        return "dashboard-progress-fill cyan"
     }
   }
 
   return (
       <div>
-        <div className="flex items-center justify-between mb-1">
+        <div className="dashboard-status-item">
           <div className="text-xs text-slate-400">{label}</div>
           <div className="text-xs text-slate-400">{value}%</div>
         </div>
-        <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-          <div className={`h-full bg-gradient-to-r ${getColor()} rounded-full`} style={{ width: `${value}%` }}></div>
+        <div className="dashboard-progress-bar">
+          <div className={`${getColor()}`} style={{ width: `${value}%` }}></div>
         </div>
       </div>
   )
@@ -866,7 +872,7 @@ function MetricCard({
   }
 
   return (
-      <div className={`bg-slate-800/50 rounded-lg border ${getColor()} p-4 relative overflow-hidden`}>
+      <div className={`dashboard-metric-card border ${getColor()}`}>
         <div className="flex items-center justify-between mb-2">
           <div className="text-sm text-slate-400">{title}</div>
           <Icon className={`h-5 w-5 text-${color}-500`} />
@@ -881,8 +887,39 @@ function MetricCard({
   )
 }
 
-// Performance chart component
+// Client-side only PerformanceChart component
 function PerformanceChart() {
+  const [chartData, setChartData] = useState<Array<{cpu: number, mem: number, net: number}>>([])
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+    // Generate deterministic data for initial render
+    const data = Array.from({ length: 24 }, (_, i) => ({
+      cpu: 30 + (i * 2) % 40,
+      mem: 40 + (i * 3) % 30,
+      net: 30 + (i * 2) % 25
+    }))
+    setChartData(data)
+  }, [])
+
+  if (!isClient) {
+    // Return a skeleton during SSR
+    return (
+      <div className="h-full w-full flex items-end justify-between px-4 pt-4 pb-8 relative">
+        <div className="flex-1 h-full flex items-end justify-between px-2 z-10">
+          {Array.from({ length: 24 }).map((_, i) => (
+            <div key={i} className="flex space-x-0.5">
+              <div className="w-1 bg-slate-700 rounded-t-sm" style={{ height: '50%' }}></div>
+              <div className="w-1 bg-slate-700 rounded-t-sm" style={{ height: '60%' }}></div>
+              <div className="w-1 bg-slate-700 rounded-t-sm" style={{ height: '40%' }}></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
       <div className="h-full w-full flex items-end justify-between px-4 pt-4 pb-8 relative">
         {/* Y-axis labels */}
@@ -905,28 +942,22 @@ function PerformanceChart() {
 
         {/* Chart bars */}
         <div className="flex-1 h-full flex items-end justify-between px-2 z-10">
-          {Array.from({ length: 24 }).map((_, i) => {
-            const cpuHeight = Math.floor(Math.random() * 60) + 20
-            const memHeight = Math.floor(Math.random() * 40) + 40
-            const netHeight = Math.floor(Math.random() * 30) + 30
-
-            return (
-                <div key={i} className="flex space-x-0.5">
-                  <div
-                      className="w-1 bg-gradient-to-t from-cyan-500 to-cyan-400 rounded-t-sm"
-                      style={{ height: `${cpuHeight}%` }}
-                  ></div>
-                  <div
-                      className="w-1 bg-gradient-to-t from-purple-500 to-purple-400 rounded-t-sm"
-                      style={{ height: `${memHeight}%` }}
-                  ></div>
-                  <div
-                      className="w-1 bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-sm"
-                      style={{ height: `${netHeight}%` }}
-                  ></div>
-                </div>
-            )
-          })}
+          {chartData.map((data, i) => (
+              <div key={i} className="flex space-x-0.5">
+                <div
+                    className="w-1 bg-gradient-to-t from-cyan-500 to-cyan-400 rounded-t-sm"
+                    style={{ height: `${data.cpu}%` }}
+                ></div>
+                <div
+                    className="w-1 bg-gradient-to-t from-purple-500 to-purple-400 rounded-t-sm"
+                    style={{ height: `${data.mem}%` }}
+                ></div>
+                <div
+                    className="w-1 bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-sm"
+                    style={{ height: `${data.net}%` }}
+                ></div>
+              </div>
+          ))}
         </div>
 
         {/* X-axis labels */}
@@ -1109,7 +1140,7 @@ function ActionButton({ icon: Icon, label }: { icon: LucideIcon; label: string }
   return (
       <Button
           variant="outline"
-          className="h-auto py-3 px-3 border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 flex flex-col items-center justify-center space-y-1 w-full"
+          className="action-button"
       >
         <Icon className="h-5 w-5 text-cyan-500" />
         <span className="text-xs">{label}</span>
@@ -1117,11 +1148,11 @@ function ActionButton({ icon: Icon, label }: { icon: LucideIcon; label: string }
   )
 }
 
-// Add missing imports
-function Info(props) {
+// Add missing imports with proper types
+function Info(props: React.SVGProps<SVGSVGElement>) {
   return <AlertCircle {...props} />
 }
 
-function Check(props) {
+function Check(props: React.SVGProps<SVGSVGElement>) {
   return <Shield {...props} />
 }

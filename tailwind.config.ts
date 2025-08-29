@@ -60,6 +60,23 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        chart: {
+          "1": "hsl(var(--chart-1))",
+          "2": "hsl(var(--chart-2))",
+          "3": "hsl(var(--chart-3))",
+          "4": "hsl(var(--chart-4))",
+          "5": "hsl(var(--chart-5))",
+        },
+        sidebar: {
+          background: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
+        },
       },
       
       // Border Radius
@@ -114,8 +131,15 @@ const config: Config = {
           "50%": { opacity: "1" },
         },
         "lightning-stream-slow": {
-          "0%": { transform: "translateY(-100%)" },
-          "100%": { transform: "translateY(400%)" },
+          "0%, 70%": { transform: "translateY(-100%)" },
+          "75%, 85%": { transform: "translateY(400%)" },
+          "90%, 100%": { transform: "translateY(-100%)" },
+        },
+        "lightning-stream-horizontal": {
+          "0%": { transform: "translateX(-100%)", opacity: "0" },
+          "15%": { opacity: "1" },
+          "85%": { opacity: "1" },
+          "100%": { transform: "translateX(100%)", opacity: "0" },
         },
         "form-border-glow-vertical-reverse-slow": {
           "0%, 100%": { opacity: "0.3" },
@@ -134,7 +158,8 @@ const config: Config = {
         "form-border-glow-vertical": "form-border-glow-vertical 2s ease-in-out infinite",
         "form-border-glow-reverse": "form-border-glow-reverse 2s ease-in-out infinite",
         "form-border-glow-vertical-reverse": "form-border-glow-vertical-reverse 2s ease-in-out infinite",
-        "lightning-stream-slow": "lightning-stream-slow 4s linear infinite",
+        "lightning-stream-slow": "lightning-stream-slow 12s linear infinite",
+        "lightning-stream-horizontal": "lightning-stream-horizontal 6s linear infinite",
         "form-border-glow-vertical-reverse-slow": "form-border-glow-vertical-reverse-slow 3s ease-in-out infinite",
       },
       
@@ -171,7 +196,10 @@ const config: Config = {
     'animate-form-border-glow-reverse',
     'animate-form-border-glow-vertical-reverse',
     'animate-lightning-stream-slow',
+    'animate-lightning-stream-horizontal',
     'animate-form-border-glow-vertical-reverse-slow',
+    'animate-spin-slow',
+    'animate-spin-slower',
   ],
 };
 

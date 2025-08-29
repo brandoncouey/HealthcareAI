@@ -1,0 +1,388 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dashboard-specific CSS variables */
+:root {
+  --dashboard-bg: 0 0% 3.9%;
+  --dashboard-fg: 0 0% 98%;
+  --dashboard-card: 0 0% 3.9%;
+  --dashboard-card-fg: 0 0% 98%;
+  --dashboard-border: 0 0% 14.9%;
+  --dashboard-input: 0 0% 14.9%;
+  --dashboard-ring: 0 0% 83.1%;
+  --dashboard-chart-1: 220 70% 50%;
+  --dashboard-chart-2: 160 60% 45%;
+  --dashboard-chart-3: 30 80% 55%;
+  --dashboard-chart-4: 280 65% 60%;
+  --dashboard-chart-5: 340 75% 55%;
+  --dashboard-sidebar-bg: 240 5.9% 10%;
+  --dashboard-sidebar-fg: 240 4.8% 95.9%;
+  --dashboard-sidebar-primary: 224.3 76.3% 48%;
+  --dashboard-sidebar-primary-fg: 0 0% 100%;
+  --dashboard-sidebar-accent: 240 3.7% 15.9%;
+  --dashboard-sidebar-accent-fg: 240 4.8% 95.9%;
+  --dashboard-sidebar-border: 240 3.7% 15.9%;
+  --dashboard-sidebar-ring: 217.2 91.2% 59.8%;
+}
+
+/* Dashboard base styles */
+.dashboard {
+  @apply bg-gradient-to-br from-black to-slate-900 text-slate-100;
+}
+
+/* Dashboard animations */
+@keyframes dashboard-spin-slow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dashboard-spin-slower {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes dashboard-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes dashboard-ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes dashboard-gradient-x {
+  0%, 100% {
+    background-size: 200% 200%;
+    background-position: left center;
+  }
+  50% {
+    background-size: 200% 200%;
+    background-position: right center;
+  }
+}
+
+/* Dashboard animation classes */
+.dashboard-animate-spin-slow {
+  animation: dashboard-spin-slow 3s linear infinite;
+}
+
+.dashboard-animate-spin-slower {
+  animation: dashboard-spin-slower 6s linear infinite;
+}
+
+.dashboard-animate-pulse {
+  animation: dashboard-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.dashboard-animate-ping {
+  animation: dashboard-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.dashboard-animate-gradient-x {
+  animation: dashboard-gradient-x 3s ease infinite;
+}
+
+/* Dashboard component styles */
+.dashboard-card {
+  @apply bg-slate-900/50 border-slate-700/50 backdrop-blur-sm;
+}
+
+.dashboard-metric-card {
+  @apply bg-slate-800/50 rounded-lg border p-4 relative overflow-hidden;
+}
+
+.dashboard-nav-item {
+  @apply w-full justify-start text-slate-400 hover:text-slate-100 transition-colors;
+}
+
+.dashboard-nav-item.active {
+  @apply bg-slate-800/70 text-cyan-400;
+}
+
+.dashboard-status-item {
+  @apply flex items-center justify-between mb-1;
+}
+
+.dashboard-progress-bar {
+  @apply h-1.5 bg-slate-800 rounded-full overflow-hidden;
+}
+
+.dashboard-progress-fill {
+  @apply h-full bg-gradient-to-r rounded-full;
+}
+
+.dashboard-progress-fill.cyan {
+  @apply from-cyan-500 to-blue-500;
+}
+
+.dashboard-progress-fill.green {
+  @apply from-green-500 to-emerald-500;
+}
+
+.dashboard-progress-fill.blue {
+  @apply from-blue-500 to-indigo-500;
+}
+
+.dashboard-progress-fill.purple {
+  @apply from-purple-500 to-pink-500;
+}
+
+/* Dashboard chart styles */
+.dashboard-chart-container {
+  @apply h-64 w-full relative bg-slate-800/30 rounded-lg border border-slate-700/50 overflow-hidden;
+}
+
+.dashboard-chart-bar {
+  @apply w-1 rounded-t-sm;
+}
+
+.dashboard-chart-bar.cpu {
+  @apply bg-gradient-to-t from-cyan-500 to-cyan-400;
+}
+
+.dashboard-chart-bar.memory {
+  @apply bg-gradient-to-t from-purple-500 to-purple-400;
+}
+
+.dashboard-chart-bar.network {
+  @apply bg-gradient-to-t from-blue-500 to-blue-400;
+}
+
+/* Dashboard loading animation */
+.dashboard-loading-ring {
+  @apply absolute border-4 border-cyan-500/30 rounded-full animate-ping;
+}
+
+.dashboard-loading-spinner {
+  @apply absolute border-4 border-t-cyan-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin;
+}
+
+.dashboard-loading-spinner-slow {
+  @apply absolute border-4 border-r-purple-500 border-t-transparent border-b-transparent border-l-transparent rounded-full animate-spin-slow;
+}
+
+.dashboard-loading-spinner-slower {
+  @apply absolute border-4 border-b-blue-500 border-t-transparent border-r-transparent border-l-transparent rounded-full animate-spin-slower;
+}
+
+.dashboard-loading-spinner-green {
+  @apply absolute border-4 border-l-green-500 border-t-transparent border-r-transparent border-b-transparent rounded-full animate-spin;
+}
+
+/* Dashboard particle effect */
+.dashboard-particle-canvas {
+  @apply absolute inset-0 w-full h-full opacity-30;
+}
+
+/* Dashboard form styles */
+.dashboard-input {
+  @apply bg-transparent border-none focus:outline-none text-sm placeholder:text-slate-500;
+}
+
+.dashboard-button {
+  @apply transition-all duration-200;
+}
+
+.dashboard-button:focus {
+  @apply outline-none ring-2 ring-cyan-500/30 border-cyan-500;
+}
+
+/* Dashboard badge styles */
+.dashboard-badge {
+  @apply bg-slate-800/50 text-cyan-400 border-cyan-500/50 text-xs;
+}
+
+.dashboard-badge.success {
+  @apply bg-green-500/20 text-green-400 border-green-500/50;
+}
+
+.dashboard-badge.warning {
+  @apply bg-amber-500/20 text-amber-400 border-amber-500/50;
+}
+
+.dashboard-badge.info {
+  @apply bg-blue-500/20 text-blue-400 border-blue-500/50;
+}
+
+/* Dashboard scrollbar styles */
+.dashboard-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.2);
+  border-radius: 3px;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 181, 226, 0.5);
+  border-radius: 3px;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 181, 226, 0.7);
+}
+
+/* Dashboard responsive utilities */
+.dashboard-grid {
+  @apply grid grid-cols-12 gap-6;
+}
+
+.dashboard-sidebar {
+  @apply col-span-12 md:col-span-3 lg:col-span-2;
+}
+
+.dashboard-main {
+  @apply col-span-12 md:col-span-9 lg:col-span-7;
+}
+
+.dashboard-right-sidebar {
+  @apply col-span-12 lg:col-span-3;
+}
+
+/* Dashboard utility classes */
+.dashboard-text-gradient {
+  @apply bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent;
+}
+
+.dashboard-border-gradient {
+  @apply border border-slate-700/50;
+}
+
+.dashboard-backdrop {
+  @apply backdrop-blur-sm;
+}
+
+.dashboard-shadow {
+  @apply shadow-2xl;
+}
+
+/* Dashboard hover effects */
+.dashboard-hover-glow:hover {
+  @apply shadow-lg shadow-cyan-500/25;
+}
+
+.dashboard-hover-scale:hover {
+  @apply transform scale-105 transition-transform duration-200;
+}
+
+/* Dashboard focus states */
+.dashboard-focus-ring:focus {
+  @apply ring-2 ring-cyan-500/30 ring-offset-2 ring-offset-slate-900;
+}
+
+/* Dashboard disabled states */
+.dashboard-disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+/* Dashboard loading states */
+.dashboard-loading {
+  @apply animate-pulse;
+}
+
+/* Dashboard success states */
+.dashboard-success {
+  @apply text-green-400;
+}
+
+/* Dashboard error states */
+.dashboard-error {
+  @apply text-red-400;
+}
+
+/* Dashboard warning states */
+.dashboard-warning {
+  @apply text-amber-400;
+}
+
+/* Dashboard info states */
+.dashboard-info {
+  @apply text-blue-400;
+}
+
+/* Action button component specific styling */
+.dashboard .action-button {
+  @apply h-auto py-3 px-3 border-slate-700/50 bg-slate-800/50 hover:bg-slate-700/50 hover:border-slate-600/50 text-slate-200 hover:text-slate-100 flex flex-col items-center justify-center space-y-1 w-full transition-all duration-200;
+}
+
+/* Quick actions specific styling */
+.dashboard .quick-action-button {
+  @apply h-auto py-3 px-3 border-slate-700/50 bg-slate-800/50 hover:bg-slate-700/50 hover:border-slate-600/50 text-slate-200 hover:text-slate-100 flex flex-col items-center justify-center space-y-1 w-full transition-all duration-200;
+}
+
+/* Override any white backgrounds in dark mode */
+.dashboard * {
+  @apply border-slate-700/50;
+}
+
+.dashboard button {
+  @apply border-slate-700/50;
+}
+
+.dashboard button:hover {
+  @apply border-slate-600/50;
+}
+
+/* Comprehensive button overrides for dashboard */
+.dashboard .btn,
+.dashboard button,
+.dashboard [role="button"] {
+  @apply bg-slate-800/50 border-slate-700/50 text-slate-200;
+}
+
+.dashboard .btn:hover,
+.dashboard button:hover,
+.dashboard [role="button"]:hover {
+  @apply bg-slate-700/50 text-slate-100 border-slate-600/50;
+}
+
+/* Specific overrides for different button variants */
+.dashboard button[data-variant="outline"],
+.dashboard .btn[data-variant="outline"] {
+  @apply bg-slate-800/50 border-slate-700/50 text-slate-200;
+}
+
+.dashboard button[data-variant="outline"]:hover,
+.dashboard .btn[data-variant="outline"]:hover {
+  @apply bg-slate-700/50 text-slate-100 border-slate-600/50;
+}
+
+.dashboard button[data-variant="ghost"],
+.dashboard .btn[data-variant="ghost"] {
+  @apply bg-transparent text-slate-400 border-transparent;
+}
+
+.dashboard button[data-variant="ghost"]:hover,
+.dashboard .btn[data-variant="ghost"]:hover {
+  @apply bg-slate-800/50 text-slate-100 border-slate-700/50;
+}
+
+/* Force dark mode for all interactive elements */
+.dashboard input,
+.dashboard select,
+.dashboard textarea {
+  @apply bg-slate-800/50 border-slate-700/50 text-slate-200;
+}
+
+.dashboard input:focus,
+.dashboard select:focus,
+.dashboard textarea:focus {
+  @apply border-cyan-500/50 ring-cyan-500/30;
+}
