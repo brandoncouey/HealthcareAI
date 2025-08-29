@@ -22,22 +22,11 @@ export default function Footer() {
             <p className="text-slate-400 mb-4 max-w-md">
               AI-powered healthcare management solutions designed for post-acute care operators.
             </p>
-            <div className="flex space-x-4">
-              <Link href="/contact" className="text-slate-400 hover:text-white transition-colors">
-                Contact
-              </Link>
-              <Link href="/privacy" className="text-slate-400 hover:text-white transition-colors">
-                Privacy
-              </Link>
-              <Link href="/terms" className="text-slate-400 hover:text-white transition-colors">
-                Terms
-              </Link>
-            </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Pages */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Quick Links</h3>
+            <h3 className="text-white font-semibold mb-4">Pages</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/" className="text-slate-400 hover:text-white transition-colors">
@@ -46,12 +35,17 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/contact" className="text-slate-400 hover:text-white transition-colors">
-                  Book Demo
+                  Contact
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="text-slate-400 hover:text-white transition-colors">
-                  Sign In
+                <Link href="/privacy" className="text-slate-400 hover:text-white transition-colors">
+                  Privacy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-slate-400 hover:text-white transition-colors">
+                  Terms
                 </Link>
               </li>
             </ul>
@@ -63,8 +57,32 @@ export default function Footer() {
             <div className="space-y-2 text-slate-400">
               <p>34 Thames Blvd</p>
               <p>Bergenfield, NJ 07621</p>
-              <p>+1 (555) 123-4567</p>
-              <p>info@exponentialplatform.com</p>
+              <p>
+                <a 
+                  href="tel:+15551234567" 
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  +1 (555) 123-4567
+                </a>
+              </p>
+              <p>
+                <a 
+                  href="mailto:info@exponentialplatform.com" 
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  info@exponentialplatform.com
+                </a>
+              </p>
+              <p>
+                <a 
+                  href="https://www.linkedin.com/company/104255014/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  LinkedIn
+                </a>
+              </p>
             </div>
           </div>
         </div>
