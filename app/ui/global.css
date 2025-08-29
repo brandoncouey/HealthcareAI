@@ -1,0 +1,349 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom animations */
+@keyframes gradient-x {
+  0%, 100% {
+    background-size: 200% 200%;
+    background-position: left center;
+  }
+  50% {
+    background-size: 200% 200%;
+    background-position: right center;
+  }
+}
+
+@keyframes form-border-glow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes form-border-glow-vertical {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes form-border-glow-reverse {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes form-border-glow-vertical-reverse {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes lightning-stream-slow {
+  0%, 70% {
+    transform: translateY(-100%);
+  }
+  75%, 85% {
+    transform: translateY(400%);
+  }
+  90%, 100% {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes lightning-stream-horizontal {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes form-border-glow-vertical-reverse-slow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 3s ease infinite;
+}
+
+.animate-form-border-glow {
+  animation: form-border-glow 2s ease-in-out infinite;
+}
+
+.animate-form-border-glow-vertical {
+  animation: form-border-glow-vertical 2s ease-in-out infinite;
+}
+
+.animate-form-border-glow-reverse {
+  animation: form-border-glow-reverse 2s ease-in-out infinite;
+}
+
+.animate-form-border-glow-vertical-reverse {
+  animation: form-border-glow-vertical-reverse 2s ease-in-out infinite;
+}
+
+.animate-lightning-stream-slow {
+  animation: lightning-stream-slow 12s linear infinite;
+}
+
+.animate-lightning-stream-slow-nav {
+  animation: lightning-stream-horizontal 6s linear infinite;
+  animation-delay: 2s;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.animate-lightning-stream-slow-footer {
+  animation: lightning-stream-horizontal 8s linear infinite;
+  animation-delay: 4s;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.animate-form-border-glow-vertical-reverse-slow {
+  animation: form-border-glow-vertical-reverse-slow 3s ease-in-out infinite;
+}
+
+/* Form styles */
+.form-input {
+  @apply transition-all duration-200;
+}
+
+.form-input:focus {
+  @apply outline-none ring-2 ring-[#00B5E2]/30 border-[#00B5E2];
+}
+
+/* Problem section - Red glow */
+.problem-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.problem-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    150px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(239, 68, 68, 0.25) 0%,
+    rgba(239, 68, 68, 0.2) 30%,
+    rgba(239, 68, 68, 0.1) 60%,
+    transparent 80%
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.problem-card:hover::before {
+  opacity: 1;
+}
+
+/* Solution section - Blue glow */
+.solution-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.solution-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    150px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(0, 181, 226, 0.25) 0%,
+    rgba(0, 181, 226, 0.2) 30%,
+    rgba(0, 181, 226, 0.1) 60%,
+    transparent 80%
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.solution-card:hover::before {
+  opacity: 1;
+}
+
+/* Neighbor card effects - more subtle */
+.problem-card.neighbor-glow::before {
+  background: radial-gradient(
+    400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(239, 68, 68, 0.15) 0%,
+    rgba(239, 68, 68, 0.12) 30%,
+    rgba(239, 68, 68, 0.08) 60%,
+    transparent 90%
+  );
+  opacity: 1;
+}
+
+.solution-card.neighbor-glow::before {
+  background: radial-gradient(
+    400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(0, 181, 226, 0.15) 0%,
+    rgba(0, 181, 226, 0.12) 30%,
+    rgba(0, 181, 226, 0.08) 60%,
+    transparent 90%
+  );
+  opacity: 1;
+}
+
+/* Neighbor outline effect */
+.neighbor-outline {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(45deg, transparent, rgba(0, 181, 226, 0.3), transparent);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.group:hover .neighbor-outline {
+  opacity: 1;
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0, 181, 226, 0.6) 0%, rgba(0, 181, 226, 0.4) 100%);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 181, 226, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(0, 181, 226, 0.8) 0%, rgba(0, 181, 226, 0.6) 100%);
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(15, 23, 42, 0.3);
+}
+
+/* Firefox scrollbar styles */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 181, 226, 0.6) rgba(15, 23, 42, 0.3);
+}
+
+/* Custom scrollbar for dropdowns and specific containers */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.2);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 181, 226, 0.5);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 181, 226, 0.7);
+}
+
