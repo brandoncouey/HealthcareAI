@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Linkedin } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -78,9 +79,10 @@ export default function Footer() {
                   href="https://www.linkedin.com/company/104255014/" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="text-slate-400 hover:text-white transition-colors inline-flex items-center"
+                  aria-label="Visit our LinkedIn page"
                 >
-                  LinkedIn
+                  <Linkedin className="h-5 w-5" />
                 </a>
               </p>
             </div>
