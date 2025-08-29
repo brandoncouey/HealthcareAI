@@ -11,15 +11,26 @@ export default function VideoModal() {
     setIsMounted(true);
   }, []);
 
+  const handleWatchClick = () => {
+    setIsOpen(true);
+  };
+
+  useEffect(() => {
+    const watchButton = document.getElementById('dashboard-preview-btn');
+
+    if (watchButton) {
+      watchButton.addEventListener('click', handleWatchClick);
+    }
+
+    return () => {
+      if (watchButton) {
+        watchButton.removeEventListener('click', handleWatchClick);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (!isMounted) return;
-
-    const handleButtonClick = (e: Event) => {
-      e.preventDefault();
-      e.stopPropagation();
-      console.log('Button clicked, opening modal');
-      setIsOpen(true);
-    };
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -27,36 +38,9 @@ export default function VideoModal() {
       }
     };
 
-    // Use a slight delay to ensure DOM is ready
-    const timer = setTimeout(() => {
-      const watchButton = document.getElementById('watch-video-btn');
-      const dashboardButton = document.getElementById('dashboard-preview-btn');
-      
-      console.log('Watch button found:', !!watchButton);
-      console.log('Page button found:', !!dashboardButton);
-      
-      if (watchButton) {
-        watchButton.addEventListener('click', handleButtonClick);
-      }
-      
-      if (dashboardButton) {
-        dashboardButton.addEventListener('click', handleButtonClick);
-      }
-    }, 100);
-
     document.addEventListener('keydown', handleEscape);
 
     return () => {
-      clearTimeout(timer);
-      const watchButton = document.getElementById('watch-video-btn');
-      const dashboardButton = document.getElementById('dashboard-preview-btn');
-      
-      if (watchButton) {
-        watchButton.removeEventListener('click', handleButtonClick);
-      }
-      if (dashboardButton) {
-        dashboardButton.removeEventListener('click', handleButtonClick);
-      }
       document.removeEventListener('keydown', handleEscape);
     };
   }, [isMounted]);

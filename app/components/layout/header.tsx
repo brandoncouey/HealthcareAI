@@ -27,7 +27,7 @@ export default function Header({ showSignIn = true, showBookDemo = true }: Heade
               alt="Exponential AI"
               width={160}
               height={160}
-              className="w-40 h-40"
+              className="w-40 h-auto"
             />
           </Link>
 

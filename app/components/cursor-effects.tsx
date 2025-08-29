@@ -4,54 +4,64 @@ import { useEffect } from 'react';
 
 export default function CursorEffects() {
   useEffect(() => {
+    const problemCards = document.querySelectorAll('.problem-card');
+    const solutionCards = document.querySelectorAll('.solution-card');
+
+    if (!problemCards.length && !solutionCards.length) {
+      return;
+    }
+
     const handleMouseMove = (e: MouseEvent) => {
-      // Update CSS custom properties for mouse position
-      document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
-      document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
 
-      // Get all problem and solution cards
-      const problemCards = document.querySelectorAll('.problem-card');
-      const solutionCards = document.querySelectorAll('.solution-card');
-      const allCards = [...problemCards, ...solutionCards];
+      // Update CSS variables for cursor position
+      document.documentElement.style.setProperty('--mouse-x', `${mouseX}px`);
+      document.documentElement.style.setProperty('--mouse-y', `${mouseY}px`);
 
-      // Debug logging
-      if (allCards.length === 0) {
-        console.log('No cards found!');
-        return;
-      }
+      // Handle neighbor glow effects
+      let hasNeighborGlow = false;
 
-      console.log(`Found ${problemCards.length} problem cards and ${solutionCards.length} solution cards`);
-
-      allCards.forEach((card, index) => {
+      // Check problem cards
+      problemCards.forEach((card, index) => {
         const rect = card.getBoundingClientRect();
         const cardCenterX = rect.left + rect.width / 2;
         const cardCenterY = rect.top + rect.height / 2;
-        
-        // Calculate distance from mouse to card center
         const distance = Math.sqrt(
-          Math.pow(e.clientX - cardCenterX, 2) + Math.pow(e.clientY - cardCenterY, 2)
+          Math.pow(mouseX - cardCenterX, 2) + Math.pow(mouseY - cardCenterY, 2)
         );
 
-        // Remove neighbor glow class
+        // Remove existing neighbor glow
         card.classList.remove('neighbor-glow');
 
-        // If mouse is within 300px of card, add neighbor glow (increased range)
-        if (distance < 300) {
+        // Add neighbor glow if mouse is within 200px of card center
+        if (distance < 200) {
           card.classList.add('neighbor-glow');
-          console.log(`Card ${index} has neighbor glow, distance: ${distance.toFixed(0)}px`);
+          hasNeighborGlow = true;
         }
+      });
 
-        // Update the card's own mouse position for internal glow
-        const cardRect = card.getBoundingClientRect();
-        const relativeX = e.clientX - cardRect.left;
-        const relativeY = e.clientY - cardRect.top;
-        
-        (card as HTMLElement).style.setProperty('--mouse-x', `${relativeX}px`);
-        (card as HTMLElement).style.setProperty('--mouse-y', `${relativeY}px`);
+      // Check solution cards
+      solutionCards.forEach((card, index) => {
+        const rect = card.getBoundingClientRect();
+        const cardCenterX = rect.left + rect.width / 2;
+        const cardCenterY = rect.top + rect.height / 2;
+        const distance = Math.sqrt(
+          Math.pow(mouseX - cardCenterX, 2) + Math.pow(mouseY - cardCenterY, 2)
+        );
+
+        // Remove existing neighbor glow
+        card.classList.remove('neighbor-glow');
+
+        // Add neighbor glow if mouse is within 200px of card center
+        if (distance < 200) {
+          card.classList.add('neighbor-glow');
+          hasNeighborGlow = true;
+        }
       });
     };
 
-    // Add event listener with throttling for better performance
+    // Throttle mouse move events for better performance
     let ticking = false;
     const throttledMouseMove = (e: MouseEvent) => {
       if (!ticking) {
@@ -63,10 +73,8 @@ export default function CursorEffects() {
       }
     };
 
-    console.log('CursorEffects component mounted, adding mouse listener');
     document.addEventListener('mousemove', throttledMouseMove);
 
-    // Cleanup
     return () => {
       document.removeEventListener('mousemove', throttledMouseMove);
     };

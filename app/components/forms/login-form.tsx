@@ -103,7 +103,7 @@ export default function LoginForm() {
      * TODO: Implement WebAuthn passkey authentication
      */
     const handlePasskeyLogin = () => {
-        console.log('Passkey login clicked');
+        // Handle passkey login logic here
     };
 
     return (

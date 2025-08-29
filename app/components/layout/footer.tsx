@@ -17,7 +17,7 @@ export default function Footer() {
                 alt="Exponential AI"
                 width={220}
                 height={120}
-                className="w-55 h-30"
+                className="w-55 h-auto"
               />
             </div>
             <p className="text-slate-400 mb-4 max-w-md">
