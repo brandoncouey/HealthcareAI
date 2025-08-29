@@ -13,7 +13,6 @@ import {
   Download,
   Globe,
   HardDrive,
-  Hexagon,
   LineChart,
   Lock,
   type LucideIcon,
@@ -49,7 +48,7 @@ export default function Dashboard() {
   const [cpuUsage, setCpuUsage] = useState(42)
   const [memoryUsage, setMemoryUsage] = useState(68)
   const [networkStatus, setNetworkStatus] = useState(92)
-  const [securityLevel, setSecurityLevel] = useState(75)
+  const [securityLevel] = useState(75)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isLoading, setIsLoading] = useState(true)
 
@@ -242,7 +241,7 @@ export default function Dashboard() {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="relative text-slate-400 hover:text-slate-100">
+                      <Button variant="ghost" className="relative text-slate-400 hover:text-slate-100">
                         <Bell className="h-5 w-5" />
                         <span className="absolute -top-1 -right-1 h-2 w-2 bg-cyan-500 rounded-full animate-pulse"></span>
                       </Button>
@@ -258,7 +257,6 @@ export default function Dashboard() {
                     <TooltipTrigger asChild>
                       <Button
                           variant="ghost"
-                          size="icon"
                           onClick={toggleTheme}
                           className="text-slate-400 hover:text-slate-100"
                       >
@@ -324,7 +322,7 @@ export default function Dashboard() {
                           <div className="h-1.5 w-1.5 rounded-full bg-cyan-500 mr-1 animate-pulse"></div>
                           LIVE
                         </Badge>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
+                        <Button variant="ghost" className="h-8 w-8 text-slate-400">
                           <RefreshCw className="h-4 w-4" />
                         </Button>
                       </div>
@@ -621,10 +619,10 @@ export default function Dashboard() {
                           placeholder="Type a message..."
                           className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500"
                       />
-                      <Button size="icon" className="bg-blue-600 hover:bg-blue-700">
+                      <Button  className="bg-blue-600 hover:bg-blue-700">
                         <Mic className="h-4 w-4" />
                       </Button>
-                      <Button size="icon" className="bg-cyan-600 hover:bg-cyan-700">
+                      <Button className="bg-cyan-600 hover:bg-cyan-700">
                         <MessageSquare className="h-4 w-4" />
                       </Button>
                     </div>

@@ -1,35 +1,30 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from 'bcryptjs';
-import { users, } from '../app/lib/placeholder-data';
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
-async function main() {
-  console.log('Starting database seeding...');
-
-  // Seed Users
-  console.log('Seeding users...');
-  for (const user of users) {
-    const hashedPassword = await bcrypt.hash(user.password, 10);
-    await prisma.user.upsert({
-      where: {id: user.id},
-      update: {},
-      create: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        password: hashedPassword,
-      },
-    });
-  }
-
-  main()
-      .then(async () => {
-        await prisma.$disconnect();
-      })
-      .catch(async (e) => {
-        console.error('Error during seeding:', e);
-        await prisma.$disconnect();
-        process.exit(1);
-      });
+async function seed() {
+  // Add your seed data here
+  console.log('Seeding database...')
+  
+  // Example: Create a test user
+  const user = await prisma.user.upsert({
+    where: { email: 'test@example.com' },
+    update: {},
+    create: {
+      email: 'test@example.com',
+      name: 'Test User',
+      password: 'hashedpassword', // In real app, hash this
+    },
+  })
+  
+  console.log('Seed completed')
 }
+
+seed()
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })

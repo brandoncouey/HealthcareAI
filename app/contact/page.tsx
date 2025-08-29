@@ -3,6 +3,10 @@ import { ArrowRight } from "lucide-react";
 import Footer from "@/app/components/layout/footer";
 import Header from "@/app/components/layout/header";
 
+// Force static generation for better performance
+export const dynamic = 'force-static'
+export const revalidate = false
+
 export default function ContactPage() {
     return (
     <div className="min-h-screen bg-gradient-to-br from-black to-slate-900 text-slate-100 flex flex-col">

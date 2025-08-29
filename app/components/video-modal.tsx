@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Play } from 'lucide-react';
+import { X } from 'lucide-react';
 
 export default function VideoModal() {
   const [isOpen, setIsOpen] = useState(false);

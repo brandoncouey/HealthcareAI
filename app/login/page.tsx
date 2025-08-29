@@ -1,7 +1,10 @@
 import LoginForm from '@/app/components/forms/login-form';
-import { Suspense } from 'react';
 import Header from "@/app/components/layout/header";
 import Footer from "@/app/components/layout/footer";
+
+// Force static generation for better performance
+export const dynamic = 'force-static'
+export const revalidate = false
 
 export default function LoginPage() {
     return (
@@ -45,13 +48,7 @@ export default function LoginPage() {
                                     <div className="absolute top-0 left-0 w-px h-full bg-gradient-to-t from-transparent via-[#00B5E2] to-transparent animate-form-border-glow-vertical-reverse-slow pointer-events-none" style={{animationDelay: '2s'}}></div>
                                 </div>
 
-                                <Suspense fallback={
-                                    <div className="flex items-center justify-center py-8">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00B5E2]"></div>
-                                    </div>
-                                }>
-                                    <LoginForm />
-                                </Suspense>
+                                <LoginForm />
                             </div>
                         </div>
                     </div>
