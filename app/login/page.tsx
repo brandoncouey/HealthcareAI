@@ -1,4 +1,4 @@
-import LoginForm from '@/app/ui/login-form';
+import LoginForm from '@/app/components/forms/login-form';
 import { Suspense } from 'react';
 import Header from "@/app/components/layout/header";
 import Footer from "@/app/components/layout/footer";

@@ -2,26 +2,13 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function listInvoices() {
-	const data = await prisma.invoice.findMany( {
-		where: {
-			amount: 666,
-		},
-		select: {
-			amount: true,
-			customer : {
-				select: {
-					name: true
-				},
-			},
-		},
-	});
-	return data;
+async function getUsers() {
+	return await prisma.user.findMany();
 }
 
 export async function GET() {
   try {
-  	return Response.json(await listInvoices());
+  	return Response.json(await getUsers());
   } catch (error) {
   	return Response.json({ error }, { status: 500 });
   }

@@ -33,7 +33,7 @@ export default function VideoModal() {
       const dashboardButton = document.getElementById('dashboard-preview-btn');
       
       console.log('Watch button found:', !!watchButton);
-      console.log('Dashboard button found:', !!dashboardButton);
+      console.log('Page button found:', !!dashboardButton);
       
       if (watchButton) {
         watchButton.addEventListener('click', handleButtonClick);

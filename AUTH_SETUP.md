@@ -96,7 +96,7 @@ graph TD
     E --> F[NextAuth Validation]
     F -->|Valid| G[Create Session]
     F -->|Invalid| H[Show Error]
-    G --> I[Redirect to Dashboard]
+    G --> I[Redirect to Page]
     H --> E
 ```
 

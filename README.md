@@ -118,13 +118,13 @@ exponential-ai-tech/
 │   │   ├── 📁 auth/                 # Authentication endpoints
 │   │   └── 📁 register/             # Registration endpoints
 │   ├── 📁 components/               # React components
-│   │   ├── 📁 dashboard/            # Dashboard components
+│   │   ├── 📁 dashboard/            # Page components
 │   │   ├── 📁 forms/                # Form components
 │   │   ├── 📁 home/                 # Homepage components
 │   │   ├── 📁 layout/               # Layout components
 │   │   └── 📁 ui/                   # UI components
 │   ├── 📁 contact/                  # Contact page
-│   ├── 📁 dashboard/                # Dashboard pages
+│   ├── 📁 dashboard/                # Page pages
 │   ├── 📁 login/                    # Login page
 │   ├── 📁 privacy/                  # Privacy policy
 │   ├── 📁 register/                 # Registration page
