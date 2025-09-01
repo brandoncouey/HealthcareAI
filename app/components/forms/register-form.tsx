@@ -37,17 +37,17 @@ export default function RegisterForm() {
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
 
   return (
-    <div className="bg-slate-900/80 rounded-2xl p-8 shadow-2xl border border-slate-700/30 backdrop-blur-sm relative overflow-hidden">
+    <div className="bg-slate-900/80 rounded-2xl p-8 shadow-2xl backdrop-blur-sm relative overflow-hidden">
       {/* Subtle border glow effect - on the very edge */}
       <div className="absolute inset-0 rounded-2xl pointer-events-none">
         {/* Top edge glow */}
-        <div className="absolute top-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-[#00B5E2] to-transparent animate-form-border-glow pointer-events-none" style={{animationDelay: '-2s'}}></div>
+        <div className="absolute top-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-[#00B5E2]/60 to-transparent animate-form-border-glow pointer-events-none" style={{animationDelay: '-2s'}}></div>
         {/* Right edge glow */}
-        <div className="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-[#00B5E2] to-transparent animate-form-border-glow-vertical pointer-events-none" style={{animationDelay: '-0.5s'}}></div>
+        <div className="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-[#00B5E2]/60 to-transparent animate-form-border-glow-vertical pointer-events-none" style={{animationDelay: '-0.5s'}}></div>
         {/* Bottom edge glow */}
-        <div className="absolute bottom-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-[#00B5E2] to-transparent animate-form-border-glow-reverse pointer-events-none" style={{animationDelay: '1s'}}></div>
+        <div className="absolute bottom-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-[#00B5E2]/60 to-transparent animate-form-border-glow-reverse pointer-events-none" style={{animationDelay: '1s'}}></div>
         {/* Left edge glow */}
-        <div className="absolute top-0 left-0 w-px h-full bg-gradient-to-t from-transparent via-[#00B5E2] to-transparent animate-form-border-glow-vertical-reverse-slow pointer-events-none" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-0 left-0 w-px h-full bg-gradient-to-t from-transparent via-[#00B5E2]/60 to-transparent animate-form-border-glow-vertical-reverse-slow pointer-events-none" style={{animationDelay: '2s'}}></div>
       </div>
 
       {/* Logo */}

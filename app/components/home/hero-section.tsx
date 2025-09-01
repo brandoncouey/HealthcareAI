@@ -52,6 +52,7 @@ export default function HeroSection() {
                   src="/dashboard-preview.png"
                   alt="Watch Promo"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover rounded-lg"
                 />
                 <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center hover:bg-black/50 transition-colors duration-300">
