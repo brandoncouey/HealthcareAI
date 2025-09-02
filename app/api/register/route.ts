@@ -4,7 +4,8 @@ import prisma from '@/app/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
-    const { firstName, lastName, email, phone, password, confirmPassword } = await request.json();
+    const data = await request.json();
+    const { firstName, lastName, email, phone, password, confirmPassword } = data;
 
     // Validate required fields
     if (!email || !password) {
@@ -66,7 +67,9 @@ export async function POST(request: NextRequest) {
       { 
         message: 'Account created successfully!', 
         user,
-        redirect: '/login'
+        redirect: '/login',
+        email,
+        phone
       },
       { status: 201 }
     );
