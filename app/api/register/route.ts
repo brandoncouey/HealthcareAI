@@ -4,11 +4,28 @@ import prisma from '@/app/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, password } = await request.json();
+    const { firstName, lastName, email, phone, password, confirmPassword } = await request.json();
 
-    if (!name || !email || !password) {
+    // Validate required fields
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Email and password are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate password confirmation
+    if (password !== confirmPassword) {
+      return NextResponse.json(
+        { error: 'Passwords do not match' },
+        { status: 400 }
+      );
+    }
+
+    // Validate password strength
+    if (password.length < 8) {
+      return NextResponse.json(
+        { error: 'Password must be at least 8 characters long' },
         { status: 400 }
       );
     }
@@ -20,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'User already exists' },
+        { error: 'User with this email already exists' },
         { status: 400 }
       );
     }
@@ -28,12 +45,15 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
+    // Create user with combined name
+    const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'User';
+    
     const user = await prisma.user.create({
       data: {
-        name,
+        name: fullName,
         email,
         password: hashedPassword,
+        phone
       },
       select: {
         id: true,
@@ -43,13 +63,17 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { message: 'User created successfully', user },
+      { 
+        message: 'Account created successfully!', 
+        user,
+        redirect: '/login'
+      },
       { status: 201 }
     );
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to create account. Please try again.' },
       { status: 500 }
     );
   }

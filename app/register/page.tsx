@@ -10,10 +10,8 @@ export default function RegisterPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-black to-slate-900 text-slate-100">
             <Header showSignIn={false} showBookDemo={false} />
-
             {/* Register Section */}
             <section className="pt-40 pb-20 bg-gradient-to-br from-black via-black to-slate-900 relative">
-
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="flex items-center justify-center min-h-[60vh]">
                         <div className="w-full max-w-xl">
@@ -29,13 +27,11 @@ export default function RegisterPage() {
                                     Join us and start your journey with Triage
                                 </p>
                             </div>
-
                             <RegisterForm />
                         </div>
                     </div>
                 </div>
             </section>
-
             <Footer />
         </div>
     );
