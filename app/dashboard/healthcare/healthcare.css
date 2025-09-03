@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Healthcare Dashboard specific animations */
+@keyframes spin-slow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-slower {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.animate-spin-slower {
+  animation: spin-slower 6s linear infinite;
+}
+
+/* Healthcare Dashboard specific styles */
+.healthcare-dashboard {
+  @apply bg-gradient-to-br from-slate-50 to-slate-100;
+}
+
+.healthcare-card {
+  @apply bg-white border-slate-200 shadow-sm;
+}
+
+.healthcare-button {
+  @apply transition-all duration-200;
+}
+
+.healthcare-button:hover {
+  @apply transform scale-105;
+}
+
+.healthcare-nav-item {
+  @apply w-full justify-start text-slate-600 hover:text-slate-900 transition-colors;
+}
+
+.healthcare-nav-item.active {
+  @apply bg-blue-50 text-blue-700 border-r-2 border-blue-700;
+}
+
+.healthcare-metric-card {
+  @apply bg-white border-slate-200 shadow-sm relative overflow-hidden;
+}
+
+.healthcare-metric-card:hover {
+  @apply shadow-md transform scale-105 transition-all duration-200;
+}
+
+.healthcare-search-input {
+  @apply bg-transparent border-none focus:outline-none text-sm placeholder:text-slate-500;
+}
+
+.healthcare-search-input:focus {
+  @apply ring-2 ring-blue-500/30;
+}
+
+.healthcare-avatar {
+  @apply bg-blue-100 text-blue-600;
+}
+
+.healthcare-badge {
+  @apply bg-slate-100 text-slate-700 border-slate-300;
+}
+
+.healthcare-badge.active {
+  @apply bg-green-100 text-green-700 border-green-300;
+}
+
+.healthcare-progress-bar {
+  @apply h-2 bg-slate-200 rounded-full overflow-hidden;
+}
+
+.healthcare-progress-fill {
+  @apply h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full;
+}
+
+/* Responsive utilities */
+.healthcare-grid {
+  @apply grid grid-cols-12 gap-6;
+}
+
+.healthcare-sidebar {
+  @apply col-span-12 md:col-span-3 lg:col-span-2;
+}
+
+.healthcare-main {
+  @apply col-span-12 md:col-span-9 lg:col-span-7;
+}
+
+.healthcare-right-sidebar {
+  @apply col-span-12 lg:col-span-3;
+}
+
+/* Hover effects */
+.healthcare-hover-glow:hover {
+  @apply shadow-lg shadow-blue-500/25;
+}
+
+.healthcare-hover-scale:hover {
+  @apply transform scale-105 transition-transform duration-200;
+}
+
+/* Focus states */
+.healthcare-focus-ring:focus {
+  @apply ring-2 ring-blue-500/30 ring-offset-2 ring-offset-white;
+}
+
+/* Loading states */
+.healthcare-loading {
+  @apply animate-pulse;
+}
+
+/* Success states */
+.healthcare-success {
+  @apply text-green-600;
+}
+
+/* Error states */
+.healthcare-error {
+  @apply text-red-600;
+}
+
+/* Warning states */
+.healthcare-warning {
+  @apply text-amber-600;
+}
+
+/* Info states */
+.healthcare-info {
+  @apply text-blue-600;
+}

@@ -405,3 +405,107 @@
   background: rgba(0, 181, 226, 0.7);
 }
 
+/* Floating Particle Animations */
+@keyframes float-x {
+  0%, 100% {
+    transform: translateX(0px);
+  }
+  50% {
+    transform: translateX(20px);
+  }
+}
+
+@keyframes float-y {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes float-diagonal {
+  0%, 100% {
+    transform: translate(0px, 0px);
+  }
+  25% {
+    transform: translate(15px, -15px);
+  }
+  50% {
+    transform: translate(25px, -25px);
+  }
+  75% {
+    transform: translate(15px, -15px);
+  }
+}
+
+@keyframes float-circular {
+  0%, 100% {
+    transform: translate(0px, 0px);
+  }
+  25% {
+    transform: translate(20px, 0px);
+  }
+  50% {
+    transform: translate(0px, -20px);
+  }
+  75% {
+    transform: translate(-20px, 0px);
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-30px);
+  }
+}
+
+@keyframes float-medium {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-25px);
+  }
+}
+
+@keyframes float-fast {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-35px);
+  }
+}
+
+.animate-float-x {
+  animation: float-x 4s ease-in-out infinite;
+}
+
+.animate-float-y {
+  animation: float-y 5s ease-in-out infinite;
+}
+
+.animate-float-diagonal {
+  animation: float-diagonal 6s ease-in-out infinite;
+}
+
+.animate-float-circular {
+  animation: float-circular 4s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: float-medium 6s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: float-fast 4s ease-in-out infinite;
+}
+

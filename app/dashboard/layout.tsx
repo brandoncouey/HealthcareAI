@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import './dashboard.css'
+import { DashboardSkeleton } from '@/app/components/ui/skeleton'
 
 export default function DashboardLayout({
   children,
@@ -8,7 +9,7 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="dashboard min-h-screen">
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<DashboardSkeleton />}>
         {children}
       </Suspense>
     </div>
