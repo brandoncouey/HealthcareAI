@@ -1,11 +1,20 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
+
+// Hash passwords with bcrypt (10 rounds)
+const hashPassword = async (password: string) => {
+  return await bcrypt.hash(password, 10)
+}
 
 async function seed() {
   console.log('Seeding database with healthcare data...')
   
   try {
+    // Hash the testing password for all users
+    const testingPassword = await hashPassword('testing')
+
     // Create organizations
     const organizations = await Promise.all([
       prisma.organization.upsert({
@@ -82,14 +91,14 @@ async function seed() {
 
     const [org1, org2, org3, org4, org5, org6, org7, org8, org9, org10] = organizations
 
-    // Create users with random organizations
+    // Create users with the same testing password
     const user1 = await prisma.user.upsert({
       where: { email: 'admin@exponential.com' },
       update: {},
       create: {
         email: 'admin@exponential.com',
         name: 'Dr. Sarah Chen',
-        password: 'hashedpassword123',
+        password: testingPassword,
         organizationId: org1.id,
       },
     })
@@ -99,96 +108,99 @@ async function seed() {
       update: {},
       create: {
         email: 'nurse@exponential.com',
-        name: 'Nurse Michael Rodriguez',
-        password: 'hashedpassword456',
+        name: 'Nurse Emily Rodriguez',
+        password: testingPassword,
         organizationId: org2.id,
       },
     })
 
     const user3 = await prisma.user.upsert({
-      where: { email: 'coordinator@advanced.com' },
+      where: { email: 'doctor@exponential.com' },
       update: {},
       create: {
-        email: 'coordinator@advanced.com',
-        name: 'Care Coordinator Lisa Thompson',
-        password: 'hashedpassword789',
+        email: 'doctor@exponential.com',
+        name: 'Dr. Michael Thompson',
+        password: testingPassword,
         organizationId: org3.id,
       },
     })
 
-    // Add more users with random organizations
-    const additionalUsers = await Promise.all([
-      prisma.user.upsert({
-        where: { email: 'doctor@mercy.com' },
-        update: {},
-        create: {
-          email: 'doctor@mercy.com',
-          name: 'Dr. James Wilson',
-          password: 'hashedpassword101',
-          organizationId: org4.id,
-        },
-      }),
-      prisma.user.upsert({
-        where: { email: 'nurse@community.com' },
-        update: {},
-        create: {
-          email: 'nurse@community.com',
-          name: 'Nurse Emily Davis',
-          password: 'hashedpassword102',
-          organizationId: org5.id,
-        },
-      }),
-      prisma.user.upsert({
-        where: { email: 'coordinator@regional.com' },
-        update: {},
-        create: {
-          email: 'coordinator@regional.com',
-          name: 'Care Coordinator Robert Johnson',
-          password: 'hashedpassword103',
-          organizationId: org6.id,
-        },
-      }),
-      prisma.user.upsert({
-        where: { email: 'therapist@metro.com' },
-        update: {},
-        create: {
-          email: 'therapist@metro.com',
-          name: 'Physical Therapist Maria Garcia',
-          password: 'hashedpassword104',
-          organizationId: org7.id,
-        },
-      }),
-      prisma.user.upsert({
-        where: { email: 'nurse@valley.com' },
-        update: {},
-        create: {
-          email: 'nurse@valley.com',
-          name: 'Nurse David Brown',
-          password: 'hashedpassword105',
-          organizationId: org8.id,
-        },
-      }),
-      prisma.user.upsert({
-        where: { email: 'coordinator@coastal.com' },
-        update: {},
-        create: {
-          email: 'coordinator@coastal.com',
-          name: 'Care Coordinator Jennifer Lee',
-          password: 'hashedpassword106',
-          organizationId: org9.id,
-        },
-      }),
-      prisma.user.upsert({
-        where: { email: 'doctor@summit.com' },
-        update: {},
-        create: {
-          email: 'doctor@summit.com',
-          name: 'Dr. Amanda Taylor',
-          password: 'hashedpassword107',
-          organizationId: org10.id,
-        },
-      })
-    ])
+    const user4 = await prisma.user.upsert({
+      where: { email: 'manager@exponential.com' },
+      update: {},
+      create: {
+        email: 'manager@exponential.com',
+        name: 'Manager Lisa Park',
+        password: testingPassword,
+        organizationId: org4.id,
+      },
+    })
+
+    const user5 = await prisma.user.upsert({
+      where: { email: 'specialist@exponential.com' },
+      update: {},
+      create: {
+        email: 'specialist@exponential.com',
+        name: 'Specialist David Kim',
+        password: testingPassword,
+        organizationId: org5.id,
+      },
+    })
+
+    const user6 = await prisma.user.upsert({
+      where: { email: 'coordinator@exponential.com' },
+      update: {},
+      create: {
+        email: 'coordinator@exponential.com',
+        name: 'Coordinator Maria Garcia',
+        password: testingPassword,
+        organizationId: org6.id,
+      },
+    })
+
+    const user7 = await prisma.user.upsert({
+      where: { email: 'therapist@exponential.com' },
+      update: {},
+      create: {
+        email: 'therapist@exponential.com',
+        name: 'Therapist James Wilson',
+        password: testingPassword,
+        organizationId: org7.id,
+      },
+    })
+
+    const user8 = await prisma.user.upsert({
+      where: { email: 'assistant@exponential.com' },
+      update: {},
+      create: {
+        email: 'assistant@exponential.com',
+        name: 'Assistant Jennifer Lee',
+        password: testingPassword,
+        organizationId: org8.id,
+      },
+    })
+
+    const user9 = await prisma.user.upsert({
+      where: { email: 'supervisor@exponential.com' },
+      update: {},
+      create: {
+        email: 'supervisor@exponential.com',
+        name: 'Supervisor Robert Brown',
+        password: testingPassword,
+        organizationId: org9.id,
+      },
+    })
+
+    const user10 = await prisma.user.upsert({
+      where: { email: 'director@exponential.com' },
+      update: {},
+      create: {
+        email: 'director@exponential.com',
+        name: 'Director Amanda Johnson',
+        password: testingPassword,
+        organizationId: org10.id,
+      },
+    })
 
     // Create services
     const services = await Promise.all([

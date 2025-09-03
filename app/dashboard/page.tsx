@@ -52,6 +52,7 @@ import { Label } from "@/app/components/ui/label"
 import Image from "next/image"
 import DashboardNavbar from "@/app/components/dashboard-navbar"
 import { DashboardSkeleton } from "@/app/components/ui/skeleton"
+import { useAuth } from "@/app/hooks/useAuth"
 
 // Utility functions
 const formatTime = (date: Date | string) => {
@@ -106,6 +107,7 @@ interface Patient {
 }
 
 export default function Dashboard() {
+  const { user } = useAuth()
   const [theme, setTheme] = useState<"dark" | "light">("dark")
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [patients, setPatients] = useState<Patient[]>([])
@@ -305,7 +307,7 @@ export default function Dashboard() {
         onSearchChange={setSearchTerm}
         theme={theme}
         onThemeToggle={toggleTheme}
-        organizationName="Exponential Healthcare Solutions"
+        organizationName={user?.organizationId ? "Exponential Healthcare Solutions" : undefined}
       />
 
         {/* Main Content */}

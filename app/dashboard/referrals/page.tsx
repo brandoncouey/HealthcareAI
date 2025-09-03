@@ -28,6 +28,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import DashboardNavbar from "@/app/components/dashboard-navbar"
 import { StatusBadge } from "@/app/components/ui/status-badge"
 import { ReferralsTableSkeleton } from "@/app/components/ui/skeleton"
+import { useAuth } from "@/app/hooks/useAuth"
 
 // Floating particles component
 const FloatingParticles = () => {
@@ -132,6 +133,7 @@ const FloatingParticles = () => {
 }
 
 export default function ReferralsPage() {
+  const { user } = useAuth()
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
@@ -285,7 +287,7 @@ export default function ReferralsPage() {
            onSearchChange={setSearchTerm}
            theme={theme}
            onThemeToggle={toggleTheme}
-           organizationName="Exponential Healthcare Solutions"
+           organizationName={user?.organizationId ? "Exponential Healthcare Solutions" : undefined}
          />
          <div className="w-full px-6 py-6">
            {/* Header Section Skeleton */}
@@ -410,7 +412,7 @@ export default function ReferralsPage() {
           onSearchChange={setSearchTerm}
           theme={theme}
           onThemeToggle={toggleTheme}
-          organizationName="Exponential Healthcare Solutions"
+          organizationName={user?.organizationId ? "Exponential Healthcare Solutions" : undefined}
         />
         <div className="w-full px-6 py-6">
           <div className="flex items-center justify-center min-h-[400px]">
@@ -439,7 +441,7 @@ export default function ReferralsPage() {
           onSearchChange={setSearchTerm}
           theme={theme}
           onThemeToggle={toggleTheme}
-          organizationName="Exponential Healthcare Solutions"
+          organizationName={user?.organizationId ? "Exponential Healthcare Solutions" : undefined}
         />
         <div className="w-full px-6 py-6">
           <div className="flex items-center justify-center min-h-[400px]">
@@ -462,7 +464,7 @@ export default function ReferralsPage() {
         onSearchChange={setSearchTerm}
         theme={theme}
         onThemeToggle={toggleTheme}
-        organizationName="Exponential Healthcare Solutions"
+        organizationName={user?.organizationId ? "Exponential Healthcare Solutions" : undefined}
       />
       
       <div className="w-full px-6 py-6">

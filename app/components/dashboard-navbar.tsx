@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import { useAuth } from "@/app/hooks/useAuth"
 import {
   Search,
   Bell,
@@ -75,6 +76,8 @@ export default function DashboardNavbar({
   onThemeToggle,
   organizationName
 }: DashboardNavbarProps) {
+  const { user, logout } = useAuth();
+  
   return (
     <nav className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-slate-700/50 sticky top-0 z-40 shadow-lg backdrop-blur-sm relative overflow-hidden">
       {/* Lightning stream effect - horizontal beam */}
@@ -187,7 +190,9 @@ export default function DashboardNavbar({
                   <div className="relative group cursor-pointer">
                     <Avatar className="h-11 w-11 border-2 border-slate-600/50 group-hover:border-cyan-500/50 transition-all duration-300">
                       <AvatarImage src="/placeholder.svg?height=40&width=40" alt="User" />
-                      <AvatarFallback className="bg-gradient-to-br from-slate-700 to-slate-800 text-cyan-400 font-semibold text-lg">HC</AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-slate-700 to-slate-800 text-cyan-400 font-semibold text-lg">
+                      {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'HC'}
+                    </AvatarFallback>
                     </Avatar>
                     <div className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
@@ -195,13 +200,16 @@ export default function DashboardNavbar({
                 <DropdownMenuContent className="bg-slate-900/95 border-slate-700/50 mt-2 backdrop-blur-sm shadow-xl w-48">
                   <DropdownMenuItem className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 rounded-lg mx-2 my-1">
                     <User className="w-4 h-4 mr-3 text-slate-400 group-hover:text-cyan-400 transition-colors duration-200" />
-                    Account
+                    {user?.name || 'Account'}
                   </DropdownMenuItem>
                   <DropdownMenuItem className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 rounded-lg mx-2 my-1">
                     <Settings className="w-4 h-4 mr-3 text-slate-400 group-hover:text-cyan-400 transition-colors duration-200" />
                     Settings
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 rounded-lg mx-2 my-1 border-t border-slate-700/30">
+                  <DropdownMenuItem 
+                    onClick={logout}
+                    className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 rounded-lg mx-2 my-1 border-t border-slate-700/30"
+                  >
                     <LogOut className="w-4 h-4 mr-3 text-slate-400 group-hover:text-cyan-400 transition-colors duration-200" />
                     Sign Out
                   </DropdownMenuItem>

@@ -13,6 +13,7 @@ import {useRouter, useSearchParams} from 'next/navigation';
 import {useState, useEffect} from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAuth } from '@/app/hooks/useAuth';
 
 // Country codes data for phone input
 const countryCodes = [
@@ -39,9 +40,8 @@ const countryCodes = [
 ];
 
 export default function LoginForm() {
-
+    const { login, authenticated, loading } = useAuth();
     const [formData, setFormData] = useState({email: '', phone: '', password: '',});
-
 
     // Navigation
     const router = useRouter();
@@ -111,23 +111,18 @@ export default function LoginForm() {
             // Determine if loginIdentifier is email or phone
             const isEmail = loginIdentifier.includes('@');
 
-            // Find user by email or phone
-            const response = await fetch('/api/auth', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ...formData
-                }),
+            // Use the auth hook to login
+            const result = await login({
+                ...formData,
+                isEmail
             });
-            const data = await response.json();
 
-            if (data.success) {
+            if (result.success) {
                 // Redirect to dashboard or handle successful login
-                router.push('/dashboard');
+                const redirectTo = searchParams.get('redirect') || '/dashboard';
+                router.push(redirectTo);
             } else {
-                setError(data.error || 'Invalid credentials');
+                setError(result.error || 'Invalid credentials');
             }
         } catch (error) {
             setError('An error occurred. Please try again.');
@@ -135,6 +130,14 @@ export default function LoginForm() {
             setIsSubmitting(false);
         }
     };
+
+    // Redirect if already authenticated
+    useEffect(() => {
+        if (authenticated && !loading) {
+            const redirectTo = searchParams.get('redirect') || '/dashboard';
+            router.push(redirectTo);
+        }
+    }, [authenticated, loading, router, searchParams]);
 
     /**
      * Handle passkey authentication
