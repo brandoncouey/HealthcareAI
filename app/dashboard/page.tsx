@@ -111,7 +111,7 @@ export default function Dashboard() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const [currentTime, setCurrentTime] = useState<Date | null>(null)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -126,12 +126,17 @@ export default function Dashboard() {
 
   // Update time
   useEffect(() => {
+    // Set initial time on client side to avoid hydration mismatch
+    if (!currentTime) {
+      setCurrentTime(new Date())
+    }
+    
     const interval = setInterval(() => {
       setCurrentTime(new Date())
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [currentTime])
 
   // Fetch dashboard data
   useEffect(() => {
@@ -396,8 +401,8 @@ export default function Dashboard() {
                     <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 border-b border-slate-700/50">
                       <div className="text-center">
                         <div className="text-xs text-slate-500 mb-1 font-mono">SYSTEM TIME</div>
-                        <div className="text-3xl font-mono text-cyan-400 mb-1">{formatTime(currentTime)}</div>
-                        <div className="text-sm text-slate-400">{formatDate(currentTime)}</div>
+                        <div className="text-3xl font-mono text-cyan-400 mb-1">{currentTime ? formatTime(currentTime) : '--:--:--'}</div>
+                        <div className="text-sm text-slate-400">{currentTime ? formatDate(currentTime) : '-- -- --'}</div>
                       </div>
                     </div>
                     <div className="p-4">

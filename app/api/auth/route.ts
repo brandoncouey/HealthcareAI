@@ -28,8 +28,9 @@ export async function POST(request: NextRequest) {
             },
             select : {
                 id: true,
+                password: true,
             }
-        }) as {password: string, id: string} | null;
+        });
 
         if (!user) {
             return Response.json(

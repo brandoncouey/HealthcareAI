@@ -321,7 +321,7 @@ export default function ReferralsPage() {
            </div>
 
            {/* Table Section Skeleton */}
-           <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
+           <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-cyan-500/10">
              <CardContent className="p-0">
                {/* Table Header Skeleton */}
                <div className="flex items-center justify-between p-6 border-b border-slate-700/50">
@@ -514,57 +514,57 @@ export default function ReferralsPage() {
 
         {/* Stats Bar */}
         <div className="grid grid-cols-4 gap-6 mb-8">
-          <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
+          <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-blue-500/10">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-slate-400 text-sm font-medium">Total Referrals</p>
-                  <p className="text-2xl font-bold text-slate-200">{filteredReferrals.length}</p>
+                  <p className="text-slate-400 text-sm font-medium group-hover:text-slate-300 transition-colors duration-300">Total Referrals</p>
+                  <p className="text-2xl font-bold text-slate-200 group-hover:text-blue-100 transition-colors duration-300">{filteredReferrals.length}</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-blue-400" />
+                <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-all duration-300">
+                  <FileText className="w-6 h-6 text-blue-400 group-hover:scale-110 group-hover:text-blue-300 transition-all duration-300" />
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
+          <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-emerald-500/10">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-slate-400 text-sm font-medium">New Today</p>
-                  <p className="text-2xl font-bold text-slate-200">12</p>
+                  <p className="text-slate-400 text-sm font-medium group-hover:text-slate-300 transition-colors duration-300">New Today</p>
+                  <p className="text-2xl font-bold text-slate-200 group-hover:text-emerald-100 transition-colors duration-300">12</p>
                 </div>
-                <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-                  <Plus className="w-6 h-6 text-emerald-400" />
+                <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center group-hover:bg-emerald-500/30 transition-all duration-300">
+                  <Plus className="w-6 h-6 text-emerald-400 group-hover:scale-110 group-hover:text-emerald-300 transition-all duration-300" />
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
+          <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-amber-500/10">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-slate-400 text-sm font-medium">Pending Review</p>
-                  <p className="text-2xl font-bold text-slate-200">8</p>
+                  <p className="text-slate-400 text-sm font-medium group-hover:text-slate-300 transition-colors duration-300">Pending Review</p>
+                  <p className="text-2xl font-bold text-slate-200 group-hover:text-amber-100 transition-colors duration-300">8</p>
                 </div>
-                <div className="w-12 h-12 bg-amber-500/20 rounded-lg flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-amber-400" />
+                <div className="w-12 h-12 bg-amber-500/20 rounded-lg flex items-center justify-center group-hover:bg-amber-500/30 transition-all duration-300">
+                  <Clock className="w-6 h-6 text-amber-400 group-hover:scale-110 group-hover:text-amber-300 transition-all duration-300" />
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
+          <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-emerald-500/10">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-slate-400 text-sm font-medium">Completed</p>
-                  <p className="text-2xl font-bold text-slate-200">156</p>
+                  <p className="text-slate-400 text-sm font-medium group-hover:text-slate-300 transition-colors duration-300">Completed</p>
+                  <p className="text-2xl font-bold text-slate-200 group-hover:text-emerald-100 transition-colors duration-300">156</p>
                 </div>
-                <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-emerald-400" />
+                <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center group-hover:bg-emerald-500/30 transition-all duration-300">
+                  <CheckCircle className="w-6 h-6 text-emerald-400 group-hover:scale-110 group-hover:text-emerald-300 transition-all duration-300" />
                 </div>
               </div>
             </CardContent>
@@ -572,11 +572,11 @@ export default function ReferralsPage() {
         </div>
 
         {/* Table Section */}
-        <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
+        <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-cyan-500/10">
           <CardContent className="p-0">
             {/* Table Header with Pagination */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-700/50">
-              <h2 className="text-lg font-semibold text-slate-200">Recent Referrals</h2>
+            <div className="flex items-center justify-between p-6 border-b border-slate-700/50 group-hover:border-slate-600/50 transition-colors duration-300">
+              <h2 className="text-lg font-semibold text-slate-200 group-hover:text-cyan-100 transition-colors duration-300">Recent Referrals</h2>
               <div className="flex items-center gap-3">
                 <span className="text-sm text-slate-400">
                   Showing {startIndex + 1}-{Math.min(endIndex, filteredReferrals.length)} of {filteredReferrals.length}
