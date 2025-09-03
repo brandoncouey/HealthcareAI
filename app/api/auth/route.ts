@@ -72,17 +72,17 @@ export async function POST(request: NextRequest) {
 
         const isEmailLogin = isEmail !== undefined ? isEmail : loginIdentifier.includes('@');
         const user = await prisma.user.findFirst({
-            where: {
-                ...(isEmailLogin ? { email: loginIdentifier } : { phone: loginIdentifier })
-            },
+            where: isEmailLogin ? { email: loginIdentifier } : { phone: loginIdentifier },
             select : {
                 id: true,
+                name: true,
+                email: true,
                 password: true,
             }
         });
 
         if (!user) {
-            return Response.json(
+            return NextResponse.json(
                 { success: false, error: "User not found" },
                 { status: 404 }
             );
@@ -102,10 +102,38 @@ export async function POST(request: NextRequest) {
             const { rawToken, expiresAt } = await createSession(user.id, request);
             console.log('Session created successfully');
             
+            // Get user's organizations
+            const userOrgs = await prisma.userOrganization.findMany({
+                where: {
+                    userId: user.id,
+                    isActive: true
+                },
+                include: {
+                    organization: true
+                },
+                orderBy: {
+                    joinedAt: 'asc' // First joined organization is primary
+                }
+            });
+            
+            const primaryOrganization = userOrgs.length > 0 ? userOrgs[0].organization : null;
+            const organizations = userOrgs.map(uo => ({
+                id: uo.organization.id,
+                name: uo.organization.name,
+                type: uo.organization.type,
+                isActive: uo.isActive
+            }));
+            
             const res = NextResponse.json({ 
                 success: true, 
                 message: "Login successful",
-                user: { id: user.id }
+                user: { 
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    primaryOrganization,
+                    organizations
+                }
             }, { status: 200 });
             
             applySessionCookie(res, rawToken, expiresAt);

@@ -133,7 +133,7 @@ const FloatingParticles = () => {
 }
 
 export default function ReferralsPage() {
-  const { user } = useAuth()
+  const { user, authenticated, loading: authLoading } = useAuth()
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
@@ -147,34 +147,60 @@ export default function ReferralsPage() {
     referral: any
   } | null>(null)
   const [referrals, setReferrals] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const itemsPerPage = 10
+  const [currentOrganizationId, setCurrentOrganizationId] = useState<string | undefined>(undefined)
+  const itemsPerPage = 4
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !authenticated) {
+      window.location.href = '/login'
+    }
+  }, [authLoading, authenticated])
+
+  // Set organization ID when user data becomes available
+  useEffect(() => {
+    if (user?.primaryOrganization?.id || user?.organizations?.[0]?.id) {
+      setCurrentOrganizationId(user.primaryOrganization?.id || user.organizations?.[0]?.id)
+    }
+  }, [user])
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
         setError(null)
-        const response = await fetch('/api/dashboard/referrals')
         
-        if (response.ok) {
-          const result = await response.json()
-          setReferrals(result)
+        if (currentOrganizationId) {
+          // Organization-specific data
+          const response = await fetch(`/api/dashboard/referrals?organizationId=${currentOrganizationId}`)
+          
+          if (response.ok) {
+            const result = await response.json()
+            setReferrals(result)
+          } else {
+            setError('Failed to fetch referrals')
+            setReferrals([])
+          }
         } else {
-          setError('Failed to fetch referrals')
+          // No organization selected - clear data
           setReferrals([])
         }
       } catch (err) {
-        setError('Network error occurred')
+        console.error('Error fetching referrals:', err)
+        setError('Failed to fetch referrals')
         setReferrals([])
       } finally {
         setLoading(false)
       }
     }
 
-    fetchData()
-  }, [])
+    // Only fetch data if we have an organization ID
+    if (currentOrganizationId) {
+      fetchData()
+    }
+  }, [currentOrganizationId])
 
   // Filter referrals based on search term and status filter
   const filteredReferrals = referrals.filter(referral => {
@@ -189,6 +215,12 @@ export default function ReferralsPage() {
     const matchesStatus = statusFilter === "ALL" || referral.status.includes(statusFilter)
     
     return matchesSearch && matchesStatus
+  }).sort((a, b) => {
+    // Sort by timePassed to show newest referrals first
+    const timeOrder = { 'Today': 1, 'Yesterday': 2, '2 days ago': 3, '3 days ago': 4, '4 days ago': 5, '5 days ago': 6, '6 days ago': 7, '1 week ago': 8, '2 weeks ago': 9, '1 month ago': 10 }
+    const aOrder = timeOrder[a.timePassed as keyof typeof timeOrder] || 999
+    const bOrder = timeOrder[b.timePassed as keyof typeof timeOrder] || 999
+    return aOrder - bOrder
   })
 
   // Calculate pagination
@@ -220,6 +252,13 @@ export default function ReferralsPage() {
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark")
+  }
+
+  const handleOrganizationChange = (organizationId: string) => {
+    setCurrentOrganizationId(organizationId)
+    // Clear current data to show loading state
+    setReferrals([])
+    setCurrentPage(1)
   }
 
   const openModal = (type: string, referral: any) => {
@@ -277,194 +316,102 @@ export default function ReferralsPage() {
     setModalOpen(true)
   }
 
-     // Show loading state
-   if (loading) {
-     return (
-       <div className={`${theme} min-h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 text-slate-100 relative overflow-hidden`}>
-         <FloatingParticles />
-         <DashboardNavbar 
-           searchTerm={searchTerm}
-           onSearchChange={setSearchTerm}
-           theme={theme}
-           onThemeToggle={toggleTheme}
-           organizationName={user?.organizationId ? "Exponential Healthcare Solutions" : undefined}
-         />
-         <div className="w-full px-6 py-6">
-           {/* Header Section Skeleton */}
-           <div className="mb-8">
-             <div className="mb-6">
-               <div className="h-8 w-48 bg-slate-700/50 rounded-lg animate-pulse"></div>
-             </div>
-             
-             {/* Search and Filters Skeleton */}
-             <div className="flex items-center gap-4">
-               <div className="relative flex-1 max-w-md">
-                 <div className="h-10 bg-slate-700/50 rounded-xl animate-pulse"></div>
-               </div>
-               <div className="h-10 w-32 bg-slate-700/50 rounded-xl animate-pulse"></div>
-             </div>
-           </div>
-
-           {/* Stats Bar Skeleton */}
-           <div className="grid grid-cols-4 gap-6 mb-8">
-             {Array.from({ length: 4 }).map((_, i) => (
-               <Card key={i} className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
-                 <CardContent className="p-6">
-                   <div className="flex items-center justify-between">
-                     <div className="space-y-2">
-                       <div className="h-4 w-24 bg-slate-700/50 rounded animate-pulse"></div>
-                       <div className="h-8 w-16 bg-slate-700/50 rounded animate-pulse"></div>
-                     </div>
-                     <div className="w-12 h-12 bg-slate-700/50 rounded-lg animate-pulse"></div>
-                   </div>
-                 </CardContent>
-               </Card>
-             ))}
-           </div>
-
-           {/* Table Section Skeleton */}
-           <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-cyan-500/10">
-             <CardContent className="p-0">
-               {/* Table Header Skeleton */}
-               <div className="flex items-center justify-between p-6 border-b border-slate-700/50">
-                 <div className="h-6 w-32 bg-slate-700/50 rounded animate-pulse"></div>
-                 <div className="flex items-center gap-3">
-                   <div className="h-4 w-24 bg-slate-700/50 rounded animate-pulse"></div>
-                   <div className="flex items-center gap-2">
-                     <div className="h-8 w-8 bg-slate-700/50 rounded-lg animate-pulse"></div>
-                     <div className="flex items-center gap-1">
-                       {Array.from({ length: 3 }).map((_, i) => (
-                         <div key={i} className="h-8 w-8 bg-slate-700/50 rounded-lg animate-pulse"></div>
-                       ))}
-                     </div>
-                     <div className="h-8 w-8 bg-slate-700/50 rounded-lg animate-pulse"></div>
-                   </div>
-                 </div>
-               </div>
-
-               {/* Table Body Skeleton */}
-               <div className="w-full">
-                 <table className="w-full">
-                   <thead>
-                     <tr className="border-b border-slate-700/50">
-                       {Array.from({ length: 10 }).map((_, i) => (
-                         <th key={i} className="px-6 py-4 text-left">
-                           <div className="h-4 w-20 bg-slate-700/50 rounded animate-pulse"></div>
-                         </th>
-                       ))}
-                     </tr>
-                   </thead>
-                   <tbody className="divide-y divide-slate-700/30">
-                     {Array.from({ length: 8 }).map((_, rowIndex) => (
-                       <tr key={rowIndex} className="animate-pulse">
-                         {Array.from({ length: 10 }).map((_, colIndex) => (
-                           <td key={colIndex} className="px-6 py-4">
-                             <div className="flex items-center gap-2">
-                               {colIndex === 0 && (
-                                 <>
-                                   <div className="h-6 w-12 bg-slate-700/50 rounded-full"></div>
-                                   <div className="h-6 w-8 bg-slate-700/50 rounded-full"></div>
-                                 </>
-                               )}
-                               {colIndex === 1 && (
-                                 <div className="h-5 w-32 bg-slate-700/50 rounded"></div>
-                               )}
-                               {colIndex === 2 && (
-                                 <div className="flex items-center gap-2">
-                                   <div className="h-4 w-4 bg-slate-700/50 rounded"></div>
-                                   <div className="h-4 w-20 bg-slate-700/50 rounded"></div>
-                                 </div>
-                               )}
-                               {colIndex === 3 && (
-                                 <div className="h-5 w-40 bg-slate-700/50 rounded"></div>
-                               )}
-                               {colIndex === 4 && (
-                                 <div className="h-5 w-32 bg-slate-700/50 rounded"></div>
-                               )}
-                               {colIndex >= 5 && colIndex <= 8 && (
-                                 <div className="h-5 w-5 bg-slate-700/50 rounded-full mx-auto"></div>
-                               )}
-                               {colIndex === 9 && (
-                                 <div className="h-8 w-8 bg-slate-700/50 rounded-lg mx-auto"></div>
-                               )}
-                             </div>
-                           </td>
-                         ))}
-                       </tr>
-                     ))}
-                   </tbody>
-                 </table>
-               </div>
-             </CardContent>
-           </Card>
-         </div>
-       </div>
-     )
-   }
-
-  // Show error state
-  if (error) {
-    return (
-      <div className={`${theme} min-h-screen bg-gradient-to-br from-black to-slate-900 text-slate-100 relative overflow-hidden`}>
-        <FloatingParticles />
-        <DashboardNavbar 
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          theme={theme}
-          onThemeToggle={toggleTheme}
-          organizationName={user?.organizationId ? "Exponential Healthcare Solutions" : undefined}
-        />
-        <div className="w-full px-6 py-6">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-slate-200 mb-2">Error Loading Data</h2>
-              <p className="text-slate-400 mb-4">{error}</p>
-              <Button onClick={() => window.location.reload()} className="bg-cyan-600 hover:bg-cyan-700">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Try Again
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // Show no data state
-  if (referrals.length === 0) {
-    return (
-      <div className={`${theme} min-h-screen bg-gradient-to-br from-black to-slate-900 text-slate-100 relative overflow-hidden`}>
-        <FloatingParticles />
-        <DashboardNavbar 
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          theme={theme}
-          onThemeToggle={toggleTheme}
-          organizationName={user?.organizationId ? "Exponential Healthcare Solutions" : undefined}
-        />
-        <div className="w-full px-6 py-6">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <FileText className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-slate-200 mb-2">No Referrals Found</h2>
-              <p className="text-slate-400">There are no referrals in the database yet.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+  // Don't render page if not authenticated
+  if (!authenticated) {
+    return null
   }
 
   return (
     <div className={`${theme} min-h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 text-slate-100 relative overflow-hidden`}>
       <FloatingParticles />
+      
+      {/* Single Loading Overlay - shows appropriate content based on loading phase */}
+      {(authLoading || loading) && (
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-900 to-slate-800 z-50">
+          {authLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+                <p className="text-xl text-slate-300">Checking authentication...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full px-6 py-6">
+              {/* Header Section Skeleton */}
+              <div className="mb-8">
+                <div className="mb-6">
+                  <div className="h-8 w-48 bg-slate-700/50 rounded-lg animate-pulse"></div>
+                </div>
+                
+                {/* Search and Filters Skeleton */}
+                <div className="flex items-center gap-4">
+                  <div className="relative flex-1 max-w-md">
+                    <div className="h-10 bg-slate-700/50 rounded-xl animate-pulse"></div>
+                  </div>
+                  <div className="h-10 w-32 bg-slate-700/50 rounded-xl animate-pulse"></div>
+                </div>
+              </div>
+
+              {/* Table Section Skeleton */}
+              <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-cyan-500/10">
+                <CardContent className="p-0">
+                  {/* Table Header Skeleton */}
+                  <div className="flex items-center justify-between p-6 border-b border-slate-700/50">
+                    <div className="h-6 w-32 bg-slate-700/50 rounded animate-pulse"></div>
+                    <div className="flex items-center gap-3">
+                      <div className="h-4 w-24 bg-slate-700/50 rounded animate-pulse"></div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 bg-slate-700/50 rounded-lg animate-pulse"></div>
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: 3 }).map((_, i) => (
+                            <div key={i} className="h-8 w-8 bg-slate-700/50 rounded-lg animate-pulse"></div>
+                          ))}
+                        </div>
+                        <div className="h-8 w-8 bg-slate-700/50 rounded-lg animate-pulse"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Table Body Skeleton */}
+                  <div className="w-full">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-slate-700/50">
+                          {Array.from({ length: 10 }).map((_, i) => (
+                            <th key={i} className="px-6 py-4 text-left">
+                              <div className="h-4 w-20 bg-slate-700/50 rounded animate-pulse"></div>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-700/30">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <tr key={i} className="hover:bg-slate-800/30">
+                            {Array.from({ length: 10 }).map((_, j) => (
+                              <td key={j} className="px-6 py-4">
+                                <div className="h-4 w-24 bg-slate-700/50 rounded animate-pulse"></div>
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+      )}
+
       <DashboardNavbar 
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         theme={theme}
         onThemeToggle={toggleTheme}
         organizationName={user?.organizationId ? "Exponential Healthcare Solutions" : undefined}
+        currentOrganizationId={currentOrganizationId}
+        onOrganizationChange={handleOrganizationChange}
       />
       
       <div className="w-full px-6 py-6">
@@ -481,7 +428,7 @@ export default function ReferralsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
                 type="text"
-                placeholder="Search referrals..."
+                placeholder="Search new referrals..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 bg-slate-800/50 border-slate-600/50 text-slate-200 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20 rounded-xl"
@@ -514,71 +461,12 @@ export default function ReferralsPage() {
           </div>
         </div>
 
-        {/* Stats Bar */}
-        <div className="grid grid-cols-4 gap-6 mb-8">
-          <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-blue-500/10">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-slate-400 text-sm font-medium group-hover:text-slate-300 transition-colors duration-300">Total Referrals</p>
-                  <p className="text-2xl font-bold text-slate-200 group-hover:text-blue-100 transition-colors duration-300">{filteredReferrals.length}</p>
-                </div>
-                <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-all duration-300">
-                  <FileText className="w-6 h-6 text-blue-400 group-hover:scale-110 group-hover:text-blue-300 transition-all duration-300" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-emerald-500/10">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-slate-400 text-sm font-medium group-hover:text-slate-300 transition-colors duration-300">New Today</p>
-                  <p className="text-2xl font-bold text-slate-200 group-hover:text-emerald-100 transition-colors duration-300">12</p>
-                </div>
-                <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center group-hover:bg-emerald-500/30 transition-all duration-300">
-                  <Plus className="w-6 h-6 text-emerald-400 group-hover:scale-110 group-hover:text-emerald-300 transition-all duration-300" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-amber-500/10">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-slate-400 text-sm font-medium group-hover:text-slate-300 transition-colors duration-300">Pending Review</p>
-                  <p className="text-2xl font-bold text-slate-200 group-hover:text-amber-100 transition-colors duration-300">8</p>
-                </div>
-                <div className="w-12 h-12 bg-amber-500/20 rounded-lg flex items-center justify-center group-hover:bg-amber-500/30 transition-all duration-300">
-                  <Clock className="w-6 h-6 text-amber-400 group-hover:scale-110 group-hover:text-amber-300 transition-all duration-300" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-emerald-500/10">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-slate-400 text-sm font-medium group-hover:text-slate-300 transition-colors duration-300">Completed</p>
-                  <p className="text-2xl font-bold text-slate-200 group-hover:text-emerald-100 transition-colors duration-300">156</p>
-                </div>
-                <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center group-hover:bg-emerald-500/30 transition-all duration-300">
-                  <CheckCircle className="w-6 h-6 text-emerald-400 group-hover:scale-110 group-hover:text-emerald-300 transition-all duration-300" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Table Section */}
         <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-cyan-500/10">
           <CardContent className="p-0">
             {/* Table Header with Pagination */}
             <div className="flex items-center justify-between p-6 border-b border-slate-700/50 group-hover:border-slate-600/50 transition-colors duration-300">
-              <h2 className="text-lg font-semibold text-slate-200 group-hover:text-cyan-100 transition-colors duration-300">Recent Referrals</h2>
+              <h2 className="text-lg font-semibold text-slate-200 group-hover:text-cyan-100 transition-colors duration-300">New Referrals</h2>
               <div className="flex items-center gap-3">
                 <span className="text-sm text-slate-400">
                   Showing {startIndex + 1}-{Math.min(endIndex, filteredReferrals.length)} of {filteredReferrals.length}

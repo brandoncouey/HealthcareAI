@@ -1,10 +1,16 @@
-import {NextResponse} from 'next/server'
+import {NextRequest, NextResponse} from 'next/server'
 import prisma from '@/app/lib/prisma'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        // Query with all related data
+        const { searchParams } = new URL(request.url)
+        const organizationId = searchParams.get('organizationId')
+        
+        // Query with all related data, filtered by organization
         const referrals = await prisma.referral.findMany({
+            where: organizationId ? {
+                patient: { organizationId }
+            } : {},
             include: {
                 patient: {
                     include: {
@@ -28,11 +34,7 @@ export async function GET() {
                 },
                 coverages: {
                     include: {
-                        plan: {
-                            include: {
-                                payer: true
-                            }
-                        }
+                        payer: true
                     }
                 }
             }
@@ -51,27 +53,27 @@ export async function GET() {
             const referringFacility = referral.patient?.organization?.name || 'Unknown Facility'
 
             // Get insurance details
-            const primaryCoverage = referral.coverages.find(c => c.role === 'PRIMARY')
-            const primaryPayor = primaryCoverage?.plan?.payer?.name || 'Unknown Insurance'
-            const planName = primaryCoverage?.plan?.name || 'Unknown Plan'
+            const primaryCoverage = referral.coverages[0] // Get first coverage
+            const primaryPayor = primaryCoverage?.payer?.name || 'Unknown Insurance'
+            const planName = primaryCoverage?.policyNumber || 'Unknown Plan'
 
             // Get diagnoses
             const diagnoses = referral.diagnoses.map(rd => ({
-                code: rd.diagnosis?.code || rd.dxCode || 'N/A',
-                display: rd.diagnosis?.display || rd.dxText || 'N/A',
+                code: rd.diagnosis?.code || 'N/A',
+                display: rd.diagnosis?.display || 'N/A',
                 isPrimary: rd.isPrimary
             }))
 
             // Get primary diagnosis
             const primaryDiagnosis = referral.diagnoses.find(rd => rd.isPrimary)
-            const primaryDxText = primaryDiagnosis?.diagnosis?.display || primaryDiagnosis?.dxText || referral.primaryDxText || 'N/A'
-            const primaryDxCode = primaryDiagnosis?.diagnosis?.code || primaryDiagnosis?.dxCode || referral.primaryDxCode || 'N/A'
+            const primaryDxText = primaryDiagnosis?.diagnosis?.display || referral.primaryDxText || 'N/A'
+            const primaryDxCode = primaryDiagnosis?.diagnosis?.code || referral.primaryDxCode || 'N/A'
 
             // Get services
             const services = referral.services.map(rs => ({
-                service: rs.service?.label || 'Unknown Service',
-                detail: rs.detail || 'N/A',
-                notes: rs.notes || 'N/A'
+                service: rs.service?.name || 'Unknown Service',
+                detail: rs.status || 'N/A',
+                notes: 'N/A'
             }))
 
             // Get medications
@@ -104,8 +106,8 @@ export async function GET() {
                 homeSupport,
                 zipCode,
                 // Additional data for modals
-                hmoPlanType: primaryCoverage?.plan?.planType || 'N/A',
-                medicareHmoProvider: primaryPayor,
+                hmoPlanType: referral.hmoPlanType || 'N/A',
+                medicareHmoProvider: referral.medicareHmoProvider || 'N/A',
                 primaryDxText,
                 primaryDxCode,
                 ntaScore: referral.ntaScore || 'Medium',

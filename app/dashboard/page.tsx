@@ -55,16 +55,6 @@ import { DashboardSkeleton } from "@/app/components/ui/skeleton"
 import { useAuth } from "@/app/hooks/useAuth"
 
 // Utility functions
-const formatTime = (date: Date | string) => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date
-  return dateObj.toLocaleTimeString("en-US", {
-    hour12: false,
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  })
-}
-
 const formatDate = (date: Date | string) => {
   const dateObj = typeof date === 'string' ? new Date(date) : date
   return dateObj.toLocaleDateString("en-US", {
@@ -107,64 +97,82 @@ interface Patient {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth()
+  const { user, authenticated, loading: authLoading } = useAuth()
   const [theme, setTheme] = useState<"dark" | "light">("dark")
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [patients, setPatients] = useState<Patient[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [currentTime, setCurrentTime] = useState<Date | null>(null)
+
+  const [currentOrganizationId, setCurrentOrganizationId] = useState<string | undefined>(undefined)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  // Simulate data loading
+  // Redirect to login if not authenticated
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 2000)
-
-    return () => clearTimeout(timer)
-  }, [])
-
-  // Update time
-  useEffect(() => {
-    // Set initial time on client side to avoid hydration mismatch
-    if (!currentTime) {
-      setCurrentTime(new Date())
+    if (!authLoading && !authenticated) {
+      window.location.href = '/login'
     }
-    
-    const interval = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 1000)
+  }, [authLoading, authenticated])
 
-    return () => clearInterval(interval)
-  }, [currentTime])
+  // Set organization ID when user data becomes available
+  useEffect(() => {
+    if (user?.primaryOrganization?.id || user?.organizations?.[0]?.id) {
+      setCurrentOrganizationId(user.primaryOrganization?.id || user?.organizations?.[0]?.id)
+    }
+  }, [user])
+
+
+
+
 
   // Fetch dashboard data
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [statsResponse, patientsResponse] = await Promise.all([
-          fetch('/api/dashboard/stats'),
-          fetch('/api/dashboard/patients')
-        ])
+        setIsLoading(true)
+        
+        if (currentOrganizationId) {
+          // Organization-specific data
+          const [statsResponse, patientsResponse] = await Promise.all([
+            fetch(`/api/dashboard/stats?organizationId=${currentOrganizationId}`),
+            fetch(`/api/dashboard/patients?organizationId=${currentOrganizationId}`)
+          ])
 
-        if (statsResponse.ok) {
-          const statsData = await statsResponse.json()
-          setStats(statsData)
-        }
+          if (statsResponse.ok) {
+            const statsData = await statsResponse.json()
+            setStats(statsData)
+          }
 
-        if (patientsResponse.ok) {
-          const patientsData = await patientsResponse.json()
-          setPatients(patientsData)
+          if (patientsResponse.ok) {
+            const patientsData = await patientsResponse.json()
+            setPatients(patientsData)
+          }
+        } else {
+          // No organization selected - clear data and show loading
+          setStats(null)
+          setPatients([])
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
+      } finally {
+        setIsLoading(false)
       }
     }
 
-    fetchDashboardData()
-  }, [])
+    // Only fetch data if we have an organization ID
+    if (currentOrganizationId) {
+      fetchDashboardData()
+    }
+  }, [currentOrganizationId])
+
+  // Handle organization change
+  const handleOrganizationChange = (organizationId: string) => {
+    setCurrentOrganizationId(organizationId)
+    // Clear current data to show loading state
+    setStats(null)
+    setPatients([])
+  }
 
   // Filter patients based on search term
   const filteredPatients = patients.filter(patient =>
@@ -261,8 +269,13 @@ export default function Dashboard() {
     setTheme(theme === "dark" ? "light" : "dark")
   }
 
+  // Don't render dashboard if not authenticated
+  if (!authenticated) {
+    return null
+  }
+
   return (
-    <div
+      <div
       className={`${theme} min-h-screen bg-gradient-to-br from-black via-slate-900 to-slate-800 text-slate-100 relative overflow-hidden`}
     >
       {/* Interactive Background Elements */}
@@ -283,13 +296,13 @@ export default function Dashboard() {
             backgroundImage: `radial-gradient(circle at 1px 1px, rgba(56, 189, 248, 0.3) 1px, transparent 0)`,
             backgroundSize: '50px 50px'
           }}></div>
-        </div>
-        
+            </div>
+
         {/* Moving light rays */}
         <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-cyan-500/20 to-transparent animate-pulse"></div>
         <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-transparent via-blue-500/20 to-transparent animate-pulse" style={{animationDelay: '1s'}}></div>
         <div className="absolute top-0 left-2/3 w-px h-full bg-gradient-to-b from-transparent via-purple-500/20 to-transparent animate-pulse" style={{animationDelay: '2s'}}></div>
-      </div>
+              </div>
 
       {/* Background particle effect */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-20" />
@@ -298,7 +311,7 @@ export default function Dashboard() {
       {isLoading && (
         <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-900 to-slate-800 z-50">
           <DashboardSkeleton />
-        </div>
+              </div>
       )}
 
       <div className="relative z-10">
@@ -308,18 +321,12 @@ export default function Dashboard() {
         theme={theme}
         onThemeToggle={toggleTheme}
         organizationName={user?.organizationId ? "Exponential Healthcare Solutions" : undefined}
+        currentOrganizationId={currentOrganizationId}
+        onOrganizationChange={handleOrganizationChange}
       />
 
         {/* Main Content */}
         <div className="container mx-auto p-4">
-          {/* Quick Stats Row */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <QuickStat label="Total Patients" value={stats?.totalPatients || 0} icon={Users} />
-            <QuickStat label="Active Referrals" value={stats?.activeReferrals || 0} icon={FileText} />
-            <QuickStat label="Total Services" value={stats?.totalServices || 0} icon={Database} />
-            <QuickStat label="Total Payers" value={stats?.totalPayers || 0} icon={Shield} />
-          </div>
-
           {/* Main Dashboard Grid */}
           <div className="grid grid-cols-12 gap-6">
             {/* Main Content Area */}
@@ -365,15 +372,15 @@ export default function Dashboard() {
                         View All
                       </Button>
                     </div>
-                  </CardHeader>
+                    </CardHeader>
                   <CardContent className="p-6">
-                    <div className="space-y-4">
+                      <div className="space-y-4">
                       {stats?.recentReferrals.map((referral) => (
                         <ReferralItem key={referral.id} referral={referral} />
                       ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </div>
+                    </CardContent>
+                  </Card>
 
                 {/* Service Distribution */}
                 <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-green-500/10">
@@ -381,15 +388,15 @@ export default function Dashboard() {
                     <CardTitle className="text-slate-100 flex items-center group-hover:text-green-100 transition-colors duration-300">
                       <PieChart className="mr-2 h-5 w-5 text-green-500 group-hover:scale-110 transition-transform duration-300" />
                       Service Utilization
-                    </CardTitle>
-                  </CardHeader>
+                      </CardTitle>
+                    </CardHeader>
                   <CardContent className="p-6">
-                    <div className="space-y-3">
+                      <div className="space-y-3">
                       {stats?.serviceDistribution.map((service, index) => (
                         <ServiceUtilizationItem key={index} service={service} />
                       ))}
-                    </div>
-                  </CardContent>
+                      </div>
+                    </CardContent>
                 </Card>
               </div>
             </div>
@@ -397,31 +404,6 @@ export default function Dashboard() {
             {/* Right Sidebar */}
             <div className="col-span-12 lg:col-span-4">
               <div className="grid gap-6">
-                {/* System time */}
-                <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 border-b border-slate-700/50">
-                      <div className="text-center">
-                        <div className="text-xs text-slate-500 mb-1 font-mono">SYSTEM TIME</div>
-                        <div className="text-3xl font-mono text-cyan-400 mb-1">{currentTime ? formatTime(currentTime) : '--:--:--'}</div>
-                        <div className="text-sm text-slate-400">{currentTime ? formatDate(currentTime) : '-- -- --'}</div>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-slate-800/50 rounded-md p-3 border border-slate-700/50">
-                          <div className="text-xs text-slate-500 mb-1">Patients</div>
-                          <div className="text-sm font-mono text-slate-200">{stats?.totalPatients || 0}</div>
-                        </div>
-                        <div className="bg-slate-800/50 rounded-md p-3 border border-slate-700/50">
-                          <div className="text-xs text-slate-500 mb-1">Referrals</div>
-                          <div className="text-sm font-mono text-slate-200">{stats?.totalReferrals || 0}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
                 {/* Quick Actions */}
                 <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
                   <CardHeader className="pb-2">
@@ -440,7 +422,7 @@ export default function Dashboard() {
                 {/* Patient Search Results */}
                 <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-slate-100 text-base">Patient Search</CardTitle>
+                    <CardTitle className="text-slate-100 text-base">Newest Patients</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
@@ -455,12 +437,12 @@ export default function Dashboard() {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </div>
-          </div>
+                        </div>
+                      </div>
+                        </div>
+                      </div>
         </div>
       </div>
-    </div>
   )
 }
 
@@ -474,20 +456,20 @@ function QuickStat({ label, value, icon: Icon }: { label: string; value: number;
       <div className="flex items-center space-x-2">
         <Icon className="h-4 w-4 text-slate-400 group-hover:text-cyan-400 group-hover:scale-110 transition-all duration-300" />
         <span className="text-lg font-semibold text-slate-200 group-hover:text-cyan-100 transition-colors duration-300">{value}</span>
+        </div>
       </div>
-    </div>
   )
 }
 
 // Component for metric cards
 function MetricCard({
-  title,
-  value,
-  icon: Icon,
-  trend,
-  color,
-  detail,
-}: {
+                      title,
+                      value,
+                      icon: Icon,
+                      trend,
+                      color,
+                      detail,
+                    }: {
   title: string
   value: number
   icon: LucideIcon
@@ -525,23 +507,23 @@ function MetricCard({
 
   return (
     <div className={`dashboard-metric-card border ${getColor()} hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/20 transition-all duration-300 group cursor-pointer`}>
-      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-2">
         <div className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors duration-300">{title}</div>
         <Icon className={`h-5 w-5 text-${color}-500 group-hover:scale-110 transition-transform duration-300`} />
-      </div>
+        </div>
       <div className="text-2xl font-bold mb-1 bg-gradient-to-r bg-clip-text text-transparent from-slate-100 to-slate-300 group-hover:from-cyan-100 group-hover:to-cyan-300 transition-all duration-300">
         {value}
-      </div>
+        </div>
       <div className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors duration-300">{detail}</div>
       <div className="absolute bottom-2 right-2 flex items-center group-hover:scale-110 transition-transform duration-300">{getTrendIcon()}</div>
       <div className="absolute -bottom-6 -right-6 h-16 w-16 rounded-full bg-gradient-to-r opacity-20 blur-xl from-cyan-500 to-blue-500 group-hover:opacity-30 transition-opacity duration-300"></div>
-    </div>
+      </div>
   )
 }
 
 // Component for referral items
 function ReferralItem({ referral }: { referral: DashboardStats['recentReferrals'][0] }) {
-  return (
+    return (
     <div className="flex items-center justify-between p-3 rounded-lg border border-slate-700/50 hover:bg-slate-800/70 hover:border-slate-600/50 hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300 group cursor-pointer">
       <div className="flex items-center space-x-3">
         <Avatar className="h-10 w-10 group-hover:scale-110 transition-transform duration-300">
@@ -554,7 +536,7 @@ function ReferralItem({ referral }: { referral: DashboardStats['recentReferrals'
           <div className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors duration-300">{referral.primaryDiagnosis}</div>
           <div className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors duration-300">
             NTA Score: {referral.ntaScore} • {formatDate(referral.createdAt)}
-          </div>
+            </div>
         </div>
       </div>
       <div className="text-right">
@@ -563,9 +545,9 @@ function ReferralItem({ referral }: { referral: DashboardStats['recentReferrals'
         </div>
         <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30 text-xs group-hover:bg-green-500/20 group-hover:border-green-400/50 transition-all duration-300">
           Active
-        </Badge>
+          </Badge>
+        </div>
       </div>
-    </div>
   )
 }
 
@@ -582,8 +564,8 @@ function ServiceUtilizationItem({ service }: { service: { service: string; count
           ></div>
         </div>
         <span className="text-sm font-medium text-slate-200 group-hover:text-cyan-100 transition-colors duration-300">{service.count}</span>
+        </div>
       </div>
-    </div>
   )
 }
 
@@ -604,23 +586,23 @@ function ActionButton({ icon: Icon, label }: { icon: LucideIcon; label: string }
 function PatientSearchResult({ patient }: { patient: Patient }) {
   return (
     <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-800/50 cursor-pointer hover:scale-105 transition-transform duration-200">
-      <Avatar className="h-8 w-8">
+        <Avatar className="h-8 w-8">
         <AvatarFallback className="bg-slate-700 text-cyan-500 text-xs">
           {patient.firstName[0]}{patient.lastName[0]}
         </AvatarFallback>
-      </Avatar>
+        </Avatar>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium text-slate-200 truncate">
           {patient.firstName} {patient.lastName}
-        </div>
+          </div>
         <div className="text-xs text-slate-400 truncate">
           {patient.age} yrs • {patient.city}, {patient.state}
         </div>
-      </div>
+            </div>
       <Badge variant="outline" className="bg-slate-800/50 text-slate-300 border-slate-600/50 text-xs">
         {patient.ntaScore}
       </Badge>
-    </div>
+      </div>
   )
 }
 

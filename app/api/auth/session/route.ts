@@ -44,13 +44,36 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ authenticated: false }, { status: 401 });
         }
 
+        // Get user's organizations
+        const userOrgs = await prisma.userOrganization.findMany({
+            where: {
+                userId: session.user.id,
+                isActive: true
+            },
+            include: {
+                organization: true
+            },
+            orderBy: {
+                joinedAt: 'asc' // First joined organization is primary
+            }
+        });
+        
+        const primaryOrganization = userOrgs.length > 0 ? userOrgs[0].organization : null;
+        const organizations = userOrgs.map(uo => ({
+            id: uo.organization.id,
+            name: uo.organization.name,
+            type: uo.organization.type,
+            isActive: uo.isActive
+        }));
+
         return NextResponse.json({
             authenticated: true,
             user: {
                 id: session.user.id,
                 name: session.user.name,
                 email: session.user.email,
-                organizationId: session.user.organizationId,
+                primaryOrganization,
+                organizations
             }
         }, { status: 200 });
     } catch (error) {

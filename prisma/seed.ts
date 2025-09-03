@@ -1,976 +1,383 @@
 import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcryptjs'
+import bcryptjs from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
-// Hash passwords with bcrypt (10 rounds)
-const hashPassword = async (password: string) => {
-  return await bcrypt.hash(password, 10)
-}
-
-async function seed() {
-  console.log('Seeding database with healthcare data...')
+// Generate realistic patient data
+function generatePatientData(organizationId: string, index: number) {
+  const firstNames = [
+    'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth',
+    'David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Christopher', 'Karen',
+    'Charles', 'Nancy', 'Daniel', 'Lisa', 'Matthew', 'Betty', 'Anthony', 'Helen', 'Mark', 'Sandra',
+    'Donald', 'Donna', 'Steven', 'Carol', 'Paul', 'Ruth', 'Andrew', 'Sharon', 'Joshua', 'Michelle',
+    'Kenneth', 'Laura', 'Kevin', 'Emily', 'Brian', 'Kimberly', 'George', 'Deborah', 'Edward', 'Dorothy',
+    'Ronald', 'Lisa', 'Timothy', 'Nancy', 'Jason', 'Karen', 'Jeffrey', 'Betty', 'Ryan', 'Helen',
+    'Jacob', 'Sandra', 'Gary', 'Donna', 'Nicholas', 'Carol', 'Eric', 'Ruth', 'Jonathan', 'Sharon',
+    'Stephen', 'Michelle', 'Larry', 'Emily', 'Justin', 'Kimberly', 'Scott', 'Deborah', 'Brandon', 'Dorothy',
+    'Benjamin', 'Lisa', 'Samuel', 'Nancy', 'Frank', 'Karen', 'Gregory', 'Betty', 'Raymond', 'Helen',
+    'Alexander', 'Sandra', 'Patrick', 'Donna', 'Jack', 'Carol', 'Dennis', 'Ruth', 'Jerry', 'Sharon'
+  ]
   
-  try {
-    // Hash the testing password for all users
-    const testingPassword = await hashPassword('testing')
+  const lastNames = [
+    'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez',
+    'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin',
+    'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson',
+    'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores',
+    'Green', 'Adams', 'Nelson', 'Baker', 'Hall', 'Rivera', 'Campbell', 'Mitchell', 'Carter', 'Roberts',
+    'Gomez', 'Phillips', 'Evans', 'Turner', 'Diaz', 'Parker', 'Cruz', 'Edwards', 'Collins', 'Reyes',
+    'Stewart', 'Morris', 'Morales', 'Murphy', 'Rogers', 'Reed', 'Cook', 'Bailey', 'Cooper', 'Richardson',
+    'Cox', 'Howard', 'Ward', 'Torres', 'Peterson', 'Gray', 'Ramirez', 'James', 'Watson', 'Brooks',
+    'Kelly', 'Sanders', 'Price', 'Bennett', 'Wood', 'Barnes', 'Ross', 'Henderson', 'Coleman', 'Jenkins',
+    'Perry', 'Powell', 'Long', 'Patterson', 'Hughes', 'Flores', 'Washington', 'Butler', 'Simmons', 'Foster'
+  ]
 
-    // Create organizations
-    const organizations = await Promise.all([
-      prisma.organization.upsert({
-        where: { name: 'Exponential Healthcare Solutions' },
-        update: {},
-        create: {
-          name: 'Exponential Healthcare Solutions',
-        },
-      }),
-      prisma.organization.upsert({
-        where: { name: 'Advanced Care Partners' },
-        update: {},
-        create: {
-          name: 'Advanced Care Partners',
-        },
-      }),
-      prisma.organization.upsert({
-        where: { name: 'Mercy Health Network' },
-        update: {},
-        create: {
-          name: 'Mercy Health Network',
-        },
-      }),
-      prisma.organization.upsert({
-        where: { name: 'St. Mary\'s Medical Center' },
-        update: {},
-        create: {
-          name: 'St. Mary\'s Medical Center',
-        },
-      }),
-      prisma.organization.upsert({
-        where: { name: 'Community Care Alliance' },
-        update: {},
-        create: {
-          name: 'Community Care Alliance',
-        },
-      }),
-      prisma.organization.upsert({
-        where: { name: 'Regional Health Partners' },
-        update: {},
-        create: {
-          name: 'Regional Health Partners',
-        },
-      }),
-      prisma.organization.upsert({
-        where: { name: 'Metropolitan Healthcare Group' },
-        update: {},
-        create: {
-          name: 'Metropolitan Healthcare Group',
-        },
-      }),
-      prisma.organization.upsert({
-        where: { name: 'Valley Medical Associates' },
-        update: {},
-        create: {
-          name: 'Valley Medical Associates',
-        },
-      }),
-      prisma.organization.upsert({
-        where: { name: 'Coastal Health Systems' },
-        update: {},
-        create: {
-          name: 'Coastal Health Systems',
-        },
-      }),
-      prisma.organization.upsert({
-        where: { name: 'Summit Healthcare Solutions' },
-        update: {},
-        create: {
-          name: 'Summit Healthcare Solutions',
-        },
-      })
-    ])
+  const cities = [
+    'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego',
+    'Dallas', 'San Jose', 'Austin', 'Jacksonville', 'Fort Worth', 'Columbus', 'Charlotte', 'San Francisco',
+    'Indianapolis', 'Seattle', 'Denver', 'Washington', 'Boston', 'El Paso', 'Nashville', 'Detroit',
+    'Oklahoma City', 'Portland', 'Las Vegas', 'Memphis', 'Louisville', 'Baltimore', 'Milwaukee'
+  ]
 
-    const [org1, org2, org3, org4, org5, org6, org7, org8, org9, org10] = organizations
+  const states = [
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA',
+    'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT',
+    'VA', 'WA', 'WV', 'WI', 'WY'
+  ]
 
-    // Create users with the same testing password
-    const user1 = await prisma.user.upsert({
-      where: { email: 'admin@exponential.com' },
-      update: {},
-      create: {
-        email: 'admin@exponential.com',
-        name: 'Dr. Sarah Chen',
-        password: testingPassword,
-        organizationId: org1.id,
-      },
-    })
+  const diagnoses = [
+    'Type 2 Diabetes Mellitus', 'Essential Hypertension', 'Chronic Obstructive Pulmonary Disease',
+    'Congestive Heart Failure', 'Chronic Kidney Disease', 'Osteoarthritis', 'Depression',
+    'Anxiety Disorder', 'Asthma', 'Coronary Artery Disease', 'Atrial Fibrillation',
+    'Peripheral Vascular Disease', 'Dementia', 'Parkinson\'s Disease', 'Multiple Sclerosis',
+    'Rheumatoid Arthritis', 'Lupus', 'Fibromyalgia', 'Migraine', 'Epilepsy'
+  ]
 
-    const user2 = await prisma.user.upsert({
-      where: { email: 'nurse@exponential.com' },
-      update: {},
-      create: {
-        email: 'nurse@exponential.com',
-        name: 'Nurse Emily Rodriguez',
-        password: testingPassword,
-        organizationId: org2.id,
-      },
-    })
+  const firstName = firstNames[Math.floor(Math.random() * firstNames.length)]
+  const lastName = lastNames[Math.floor(Math.random() * lastNames.length)]
+  const age = Math.floor(Math.random() * 50) + 50 // 50-100 years old
+  const city = cities[Math.floor(Math.random() * cities.length)]
+  const state = states[Math.floor(Math.random() * states.length)]
+  const postalCode = Math.floor(Math.random() * 90000) + 10000
+  const primaryDiagnosis = diagnoses[Math.floor(Math.random() * diagnoses.length)]
+  const medicalRecordNumber = `MRN${organizationId.slice(0, 8)}${index.toString().padStart(4, '0')}`
 
-    const user3 = await prisma.user.upsert({
-      where: { email: 'doctor@exponential.com' },
-      update: {},
-      create: {
-        email: 'doctor@exponential.com',
-        name: 'Dr. Michael Thompson',
-        password: testingPassword,
-        organizationId: org3.id,
-      },
-    })
-
-    const user4 = await prisma.user.upsert({
-      where: { email: 'manager@exponential.com' },
-      update: {},
-      create: {
-        email: 'manager@exponential.com',
-        name: 'Manager Lisa Park',
-        password: testingPassword,
-        organizationId: org4.id,
-      },
-    })
-
-    const user5 = await prisma.user.upsert({
-      where: { email: 'specialist@exponential.com' },
-      update: {},
-      create: {
-        email: 'specialist@exponential.com',
-        name: 'Specialist David Kim',
-        password: testingPassword,
-        organizationId: org5.id,
-      },
-    })
-
-    const user6 = await prisma.user.upsert({
-      where: { email: 'coordinator@exponential.com' },
-      update: {},
-      create: {
-        email: 'coordinator@exponential.com',
-        name: 'Coordinator Maria Garcia',
-        password: testingPassword,
-        organizationId: org6.id,
-      },
-    })
-
-    const user7 = await prisma.user.upsert({
-      where: { email: 'therapist@exponential.com' },
-      update: {},
-      create: {
-        email: 'therapist@exponential.com',
-        name: 'Therapist James Wilson',
-        password: testingPassword,
-        organizationId: org7.id,
-      },
-    })
-
-    const user8 = await prisma.user.upsert({
-      where: { email: 'assistant@exponential.com' },
-      update: {},
-      create: {
-        email: 'assistant@exponential.com',
-        name: 'Assistant Jennifer Lee',
-        password: testingPassword,
-        organizationId: org8.id,
-      },
-    })
-
-    const user9 = await prisma.user.upsert({
-      where: { email: 'supervisor@exponential.com' },
-      update: {},
-      create: {
-        email: 'supervisor@exponential.com',
-        name: 'Supervisor Robert Brown',
-        password: testingPassword,
-        organizationId: org9.id,
-      },
-    })
-
-    const user10 = await prisma.user.upsert({
-      where: { email: 'director@exponential.com' },
-      update: {},
-      create: {
-        email: 'director@exponential.com',
-        name: 'Director Amanda Johnson',
-        password: testingPassword,
-        organizationId: org10.id,
-      },
-    })
-
-    // Create services
-    const services = await Promise.all([
-      prisma.service.upsert({
-        where: { key: 'CATHETER' },
-        update: {},
-        create: { key: 'CATHETER', label: 'Catheter Care', category: 'Medical Supplies' },
-      }),
-      prisma.service.upsert({
-        where: { key: 'OSTOMY' },
-        update: {},
-        create: { key: 'OSTOMY', label: 'Ostomy Care', category: 'Medical Supplies' },
-      }),
-      prisma.service.upsert({
-        where: { key: 'DRAIN' },
-        update: {},
-        create: { key: 'DRAIN', label: 'Drain Management', category: 'Medical Supplies' },
-      }),
-      prisma.service.upsert({
-        where: { key: 'WOUND' },
-        update: {},
-        create: { key: 'WOUND', label: 'Wound Care', category: 'Medical Supplies' },
-      }),
-      prisma.service.upsert({
-        where: { key: 'WOUND_VAC' },
-        update: {},
-        create: { key: 'WOUND_VAC', label: 'Wound Vacuum Therapy', category: 'Medical Supplies' },
-      }),
-      prisma.service.upsert({
-        where: { key: 'IV_FLUIDS' },
-        update: {},
-        create: { key: 'IV_FLUIDS', label: 'IV Fluid Therapy', category: 'Medical Supplies' },
-      }),
-    ])
-
-    // Create payers
-    const payers = await Promise.all([
-      prisma.payer.upsert({
-        where: { name: 'Humana Insurance Company' },
-        update: {},
-        create: { name: 'Humana Insurance Company', naic: '12345' },
-      }),
-      prisma.payer.upsert({
-        where: { name: 'Aetna Health Insurance' },
-        update: {},
-        create: { name: 'Aetna Health Insurance', naic: '67890' },
-      }),
-      prisma.payer.upsert({
-        where: { name: 'Blue Cross Blue Shield' },
-        update: {},
-        create: { name: 'Blue Cross Blue Shield', naic: '11111' },
-      }),
-      prisma.payer.upsert({
-        where: { name: 'Medicare' },
-        update: {},
-        create: { name: 'Medicare', naic: '22222' },
-      }),
-    ])
-
-    // Create plans
-    const plans = await Promise.all([
-      prisma.plan.upsert({
-        where: { id: 'plan-1' },
-        update: {},
-        create: {
-          id: 'plan-1',
-          payerId: payers[0].id, // Humana
-          name: 'HUMANA CHOICE MEDICARE',
-          planType: 'HMO',
-          isMedicare: true,
-        },
-      }),
-      prisma.plan.upsert({
-        where: { id: 'plan-2' },
-        update: {},
-        create: {
-          id: 'plan-2',
-          payerId: payers[1].id, // Aetna
-          name: 'AETNA MEDICARE ADVANTAGE',
-          planType: 'PPO',
-          isMedicare: true,
-        },
-      }),
-      prisma.plan.upsert({
-        where: { id: 'plan-3' },
-        update: {},
-        create: {
-          id: 'plan-3',
-          payerId: payers[2].id, // BCBS
-          name: 'BLUE CROSS MEDICARE SUPPLEMENT',
-          planType: 'Supplement',
-          isMedicare: true,
-        },
-      }),
-    ])
-
-    // Create disciplines
-    const disciplines = await Promise.all([
-      prisma.discipline.upsert({
-        where: { key: 'SN' },
-        update: {},
-        create: { key: 'SN', name: 'Skilled Nursing' },
-      }),
-      prisma.discipline.upsert({
-        where: { key: 'PT' },
-        update: {},
-        create: { key: 'PT', name: 'Physical Therapy' },
-      }),
-      prisma.discipline.upsert({
-        where: { key: 'OT' },
-        update: {},
-        create: { key: 'OT', name: 'Occupational Therapy' },
-      }),
-      prisma.discipline.upsert({
-        where: { key: 'SLP' },
-        update: {},
-        create: { key: 'SLP', name: 'Speech Language Pathology' },
-      }),
-    ])
-
-    // Create diagnoses - Common medical conditions
-    const diagnoses = await Promise.all([
-      // Cardiovascular
-      prisma.diagnosis.upsert({
-        where: { code: 'I10' },
-        update: {},
-        create: { code: 'I10', display: 'Essential (primary) hypertension', category: 'Cardiovascular' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'I50.9' },
-        update: {},
-        create: { code: 'I50.9', display: 'Heart failure, unspecified', category: 'Cardiovascular' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'I25.10' },
-        update: {},
-        create: { code: 'I25.10', display: 'Atherosclerotic heart disease of native coronary artery without angina pectoris', category: 'Cardiovascular' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'I48.91' },
-        update: {},
-        create: { code: 'I48.91', display: 'Unspecified atrial fibrillation', category: 'Cardiovascular' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'I70.9' },
-        update: {},
-        create: { code: 'I70.9', display: 'Generalized atherosclerosis', category: 'Cardiovascular' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'I47.1' },
-        update: {},
-        create: { code: 'I47.1', display: 'Supraventricular tachycardia', category: 'Cardiovascular' },
-      }),
-      
-      // Endocrine
-      prisma.diagnosis.upsert({
-        where: { code: 'E11.9' },
-        update: {},
-        create: { code: 'E11.9', display: 'Type 2 diabetes mellitus without complications', category: 'Endocrine' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'E11.21' },
-        update: {},
-        create: { code: 'E11.21', display: 'Type 2 diabetes mellitus with diabetic nephropathy', category: 'Endocrine' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'E11.22' },
-        update: {},
-        create: { code: 'E11.22', display: 'Type 2 diabetes mellitus with diabetic chronic kidney disease', category: 'Endocrine' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'E11.65' },
-        update: {},
-        create: { code: 'E11.65', display: 'Type 2 diabetes mellitus with hyperglycemia', category: 'Endocrine' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'E03.9' },
-        update: {},
-        create: { code: 'E03.9', display: 'Hypothyroidism, unspecified', category: 'Endocrine' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'E78.5' },
-        update: {},
-        create: { code: 'E78.5', display: 'Disorder of lipoprotein metabolism, unspecified', category: 'Endocrine' },
-      }),
-      
-      // Respiratory
-      prisma.diagnosis.upsert({
-        where: { code: 'J44.9' },
-        update: {},
-        create: { code: 'J44.9', display: 'Chronic obstructive pulmonary disease, unspecified', category: 'Respiratory' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'J45.909' },
-        update: {},
-        create: { code: 'J45.909', display: 'Unspecified asthma with (acute) exacerbation', category: 'Respiratory' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'J47' },
-        update: {},
-        create: { code: 'J47', display: 'Bronchiectasis', category: 'Respiratory' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'J84.9' },
-        update: {},
-        create: { code: 'J84.9', display: 'Interstitial lung disease, unspecified', category: 'Respiratory' },
-      }),
-      
-      // Genitourinary
-      prisma.diagnosis.upsert({
-        where: { code: 'N30.90' },
-        update: {},
-        create: { code: 'N30.90', display: 'Cystitis, unspecified without hematuria', category: 'Genitourinary' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'N18.9' },
-        update: {},
-        create: { code: 'N18.9', display: 'Chronic kidney disease, unspecified', category: 'Genitourinary' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'N39.0' },
-        update: {},
-        create: { code: 'N39.0', display: 'Urinary tract infection, site not specified', category: 'Genitourinary' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'N40' },
-        update: {},
-        create: { code: 'N40', display: 'Benign prostatic hyperplasia', category: 'Genitourinary' },
-      }),
-      
-      // Skin
-      prisma.diagnosis.upsert({
-        where: { code: 'L89.9' },
-        update: {},
-        create: { code: 'L89.9', display: 'Pressure ulcer of unspecified site, unspecified stage', category: 'Skin' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'L89.3' },
-        update: {},
-        create: { code: 'L89.3', display: 'Pressure ulcer of sacral region', category: 'Skin' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'L89.2' },
-        update: {},
-        create: { code: 'L89.2', display: 'Pressure ulcer of hip', category: 'Skin' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'L02.91' },
-        update: {},
-        create: { code: 'L02.91', display: 'Cutaneous abscess, unspecified', category: 'Skin' },
-      }),
-      
-      // Musculoskeletal
-      prisma.diagnosis.upsert({
-        where: { code: 'M62.9' },
-        update: {},
-        create: { code: 'M62.9', display: 'Muscle weakness, unspecified', category: 'Musculoskeletal' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'M79.3' },
-        update: {},
-        create: { code: 'M79.3', display: 'Pain in unspecified wrist and hand', category: 'Musculoskeletal' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'M79.1' },
-        update: {},
-        create: { code: 'M79.1', display: 'Myalgia', category: 'Musculoskeletal' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'M81.0' },
-        update: {},
-        create: { code: 'M81.0', display: 'Age-related osteoporosis without current pathological fracture', category: 'Musculoskeletal' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'M17.9' },
-        update: {},
-        create: { code: 'M17.9', display: 'Osteoarthritis of knee, unspecified', category: 'Musculoskeletal' },
-      }),
-      
-      // Neurological
-      prisma.diagnosis.upsert({
-        where: { code: 'G91.9' },
-        update: {},
-        create: { code: 'G91.9', display: 'Hydrocephalus, unspecified', category: 'Neurological' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'G30.9' },
-        update: {},
-        create: { code: 'G30.9', display: 'Alzheimer\'s disease, unspecified', category: 'Neurological' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'I63.9' },
-        update: {},
-        create: { code: 'I63.9', display: 'Cerebral infarction, unspecified', category: 'Neurological' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'G20' },
-        update: {},
-        create: { code: 'G20', display: 'Parkinson\'s disease', category: 'Neurological' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'G40.909' },
-        update: {},
-        create: { code: 'G40.909', display: 'Epilepsy, unspecified, not intractable, without status epilepticus', category: 'Neurological' },
-      }),
-      
-      // Gastrointestinal
-      prisma.diagnosis.upsert({
-        where: { code: 'K91.3' },
-        update: {},
-        create: { code: 'K91.3', display: 'Postprocedural intestinal obstruction', category: 'Gastrointestinal' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'K59.0' },
-        update: {},
-        create: { code: 'K59.0', display: 'Constipation, unspecified', category: 'Gastrointestinal' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'K29.70' },
-        update: {},
-        create: { code: 'K29.70', display: 'Gastritis, unspecified, without bleeding', category: 'Gastrointestinal' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'K92.2' },
-        update: {},
-        create: { code: 'K92.2', display: 'Gastrointestinal hemorrhage, unspecified', category: 'Gastrointestinal' },
-      }),
-      
-      // Mental Health
-      prisma.diagnosis.upsert({
-        where: { code: 'F32.9' },
-        update: {},
-        create: { code: 'F32.9', display: 'Major depressive disorder, unspecified', category: 'Mental Health' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'F41.1' },
-        update: {},
-        create: { code: 'F41.1', display: 'Generalized anxiety disorder', category: 'Mental Health' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'F03.90' },
-        update: {},
-        create: { code: 'F03.90', display: 'Unspecified dementia without behavioral disturbance', category: 'Mental Health' },
-      }),
-      
-      // Other Common Conditions
-      prisma.diagnosis.upsert({
-        where: { code: 'E66.9' },
-        update: {},
-        create: { code: 'E66.9', display: 'Obesity, unspecified', category: 'Metabolic' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'Z51.11' },
-        update: {},
-        create: { code: 'Z51.11', display: 'Encounter for antineoplastic chemotherapy', category: 'Oncology' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'S72.9' },
-        update: {},
-        create: { code: 'S72.9', display: 'Fracture of femur, unspecified', category: 'Trauma' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'Z79.4' },
-        update: {},
-        create: { code: 'Z79.4', display: 'Long term (current) drug therapy, use of antineoplastic agents', category: 'Oncology' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'Z90.9' },
-        update: {},
-        create: { code: 'Z90.9', display: 'Acquired absence of unspecified organ', category: 'Post-procedural' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'Z95.1' },
-        update: {},
-        create: { code: 'Z95.1', display: 'Presence of aortocoronary bypass graft', category: 'Post-procedural' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'Z95.2' },
-        update: {},
-        create: { code: 'Z95.2', display: 'Presence of prosthetic heart valve', category: 'Post-procedural' },
-      }),
-      prisma.diagnosis.upsert({
-        where: { code: 'Z99.2' },
-        update: {},
-        create: { code: 'Z99.2', display: 'Dependence on renal dialysis', category: 'Post-procedural' },
-      }),
-    ])
-
-    // Create medications
-    const medications = await Promise.all([
-      prisma.medication.upsert({
-        where: { name: 'Metformin' },
-        update: {},
-        create: { name: 'Metformin', code: 'RX6809' },
-      }),
-      prisma.medication.upsert({
-        where: { name: 'Lisinopril' },
-        update: {},
-        create: { name: 'Lisinopril', code: 'RX6478' },
-      }),
-      prisma.medication.upsert({
-        where: { name: 'Atorvastatin' },
-        update: {},
-        create: { name: 'Atorvastatin', code: 'RX3654' },
-      }),
-    ])
-
-    // Create patients
-    const patients = await Promise.all([
-      prisma.patient.upsert({
-        where: { id: 'patient-1' },
-        update: {},
-        create: {
-          id: 'patient-1',
-          organizationId: org1.id,
-          firstName: 'Margaret',
-          lastName: 'Johnson',
-          dob: new Date('1945-03-15'),
-          sex: 'F',
-          height: '5\'4"',
-          weight: '145 lb',
-          phone: '(555) 123-4567',
-          email: 'margaret.johnson@email.com',
-          addressLine1: '123 Oak Street',
-          city: 'Springfield',
-          state: 'IL',
-          postalCode: '62701',
-          country: 'USA',
-        },
-      }),
-      prisma.patient.upsert({
-        where: { id: 'patient-2' },
-        update: {},
-        create: {
-          id: 'patient-2',
-          organizationId: org1.id,
-          firstName: 'Robert',
-          lastName: 'Williams',
-          dob: new Date('1952-07-22'),
-          sex: 'M',
-          height: '5\'10"',
-          weight: '180 lb',
-          phone: '(555) 234-5678',
-          email: 'robert.williams@email.com',
-          addressLine1: '456 Maple Avenue',
-          city: 'Springfield',
-          state: 'IL',
-          postalCode: '62701',
-          country: 'USA',
-        },
-      }),
-      prisma.patient.upsert({
-        where: { id: 'patient-3' },
-        update: {},
-        create: {
-          id: 'patient-3',
-          organizationId: org2.id,
-          firstName: 'Dorothy',
-          lastName: 'Davis',
-          dob: new Date('1938-11-08'),
-          sex: 'F',
-          height: '5\'2"',
-          weight: '125 lb',
-          phone: '(555) 345-6789',
-          email: 'dorothy.davis@email.com',
-          addressLine1: '789 Pine Road',
-          city: 'Chicago',
-          state: 'IL',
-          postalCode: '60601',
-          country: 'USA',
-        },
-      }),
-    ])
-
-    // Create emergency contacts
-    await Promise.all([
-      prisma.emergencyContact.create({
-        data: {
-          patientId: patients[0].id,
-          name: 'Thomas Johnson',
-          phone: '(555) 123-4568',
-          relation: 'Son',
-        },
-      }),
-      prisma.emergencyContact.create({
-        data: {
-          patientId: patients[1].id,
-          name: 'Jennifer Williams',
-          phone: '(555) 234-5679',
-          relation: 'Daughter',
-        },
-      }),
-      prisma.emergencyContact.create({
-        data: {
-          patientId: patients[2].id,
-          name: 'James Davis',
-          phone: '(555) 345-6790',
-          relation: 'Son',
-        },
-      }),
-    ])
-
-    // Create referrals
-    const referrals = await Promise.all([
-      prisma.referral.create({
-        data: {
-          patientId: patients[0].id,
-          livesWith: 'Alone',
-          ecName: 'Thomas Johnson',
-          ecPhone: '(555) 123-4568',
-          ecRelation: 'Son',
-          ntaScore: 'Medium',
-          hmoPlanType: 'HMO',
-          medicareHmoProvider: 'HUMANA INSURANCE COMPANY',
-          primaryDxCode: 'I10',
-          primaryDxText: 'Essential (primary) hypertension',
-        },
-      }),
-      prisma.referral.create({
-        data: {
-          patientId: patients[1].id,
-          livesWith: 'Spouse',
-          ecName: 'Jennifer Williams',
-          ecPhone: '(555) 234-5679',
-          ecRelation: 'Daughter',
-          ntaScore: 'High',
-          hmoPlanType: 'PPO',
-          medicareHmoProvider: 'AETNA HEALTH INSURANCE',
-          primaryDxCode: 'E11.9',
-          primaryDxText: 'Type 2 diabetes mellitus without complications',
-        },
-      }),
-      prisma.referral.create({
-        data: {
-          patientId: patients[2].id,
-          livesWith: 'Son',
-          ecName: 'James Davis',
-          ecPhone: '(555) 345-6790',
-          ecRelation: 'Son',
-          ntaScore: 'Low',
-          hmoPlanType: 'Supplement',
-          medicareHmoProvider: 'BLUE CROSS BLUE SHIELD',
-          primaryDxCode: 'L89.9',
-          primaryDxText: 'Pressure ulcer of unspecified site, unspecified stage',
-        },
-      }),
-    ])
-
-    // Create referral coverages
-    await Promise.all([
-      prisma.referralCoverage.create({
-        data: {
-          referralId: referrals[0].id,
-          planId: plans[0].id,
-          role: 'PRIMARY',
-        },
-      }),
-      prisma.referralCoverage.create({
-        data: {
-          referralId: referrals[1].id,
-          planId: plans[1].id,
-          role: 'PRIMARY',
-        },
-      }),
-      prisma.referralCoverage.create({
-        data: {
-          referralId: referrals[2].id,
-          planId: plans[2].id,
-          role: 'PRIMARY',
-        },
-      }),
-    ])
-
-    // Create referral services
-    await Promise.all([
-      prisma.referralService.create({
-        data: {
-          referralId: referrals[0].id,
-          serviceId: services[0].id, // CATHETER
-          present: true,
-          detail: 'Indwelling catheter',
-          notes: 'Patient requires assistance with catheter care',
-        },
-      }),
-      prisma.referralService.create({
-        data: {
-          referralId: referrals[0].id,
-          serviceId: services[3].id, // WOUND
-          present: true,
-          detail: 'Stage 2 pressure ulcer',
-          notes: 'Wound on sacrum, requires daily dressing changes',
-        },
-      }),
-      prisma.referralService.create({
-        data: {
-          referralId: referrals[1].id,
-          serviceId: services[5].id, // IV_FLUIDS
-          present: true,
-          detail: 'Daily IV hydration',
-          notes: 'Patient has difficulty maintaining hydration',
-        },
-      }),
-      prisma.referralService.create({
-        data: {
-          referralId: referrals[2].id,
-          serviceId: services[4].id, // WOUND_VAC
-          present: true,
-          detail: 'Wound vacuum therapy',
-          notes: 'Complex wound requiring negative pressure therapy',
-        },
-      }),
-    ])
-
-    // Create referral diagnoses - Multiple diagnoses per referral
-    await Promise.all([
-      // Referral 1: Hypertension (Primary) + Multiple comorbidities
-      prisma.referralDiagnosis.create({
-        data: {
-          referralId: referrals[0].id,
-          dxCode: 'I10', // Primary diagnosis
-          dxText: 'Essential (primary) hypertension',
-          isPrimary: true,
-        },
-      }),
-      prisma.referralDiagnosis.create({
-        data: {
-          referralId: referrals[0].id,
-          dxCode: 'E11.9',
-          dxText: 'Type 2 diabetes mellitus without complications',
-          isPrimary: false,
-        },
-      }),
-      prisma.referralDiagnosis.create({
-        data: {
-          referralId: referrals[0].id,
-          dxCode: 'E66.9',
-          dxText: 'Obesity, unspecified',
-          isPrimary: false,
-        },
-      }),
-
-      // Referral 2: Diabetes (Primary) + Multiple comorbidities
-      prisma.referralDiagnosis.create({
-        data: {
-          referralId: referrals[1].id,
-          dxCode: 'E11.9', // Primary diagnosis
-          dxText: 'Type 2 diabetes mellitus without complications',
-          isPrimary: true,
-        },
-      }),
-      prisma.referralDiagnosis.create({
-        data: {
-          referralId: referrals[1].id,
-          dxCode: 'I10',
-          dxText: 'Essential (primary) hypertension',
-          isPrimary: false,
-        },
-      }),
-      prisma.referralDiagnosis.create({
-        data: {
-          referralId: referrals[1].id,
-          dxCode: 'E66.9',
-          dxText: 'Obesity, unspecified',
-          isPrimary: false,
-        },
-      }),
-
-      // Referral 3: Pressure Ulcer (Primary) + Multiple comorbidities
-      prisma.referralDiagnosis.create({
-        data: {
-          referralId: referrals[2].id,
-          dxCode: 'L89.9', // Primary diagnosis
-          dxText: 'Pressure ulcer of unspecified site, unspecified stage',
-          isPrimary: true,
-        },
-      }),
-      prisma.referralDiagnosis.create({
-        data: {
-          referralId: referrals[2].id,
-          dxCode: 'I10',
-          dxText: 'Essential (primary) hypertension',
-          isPrimary: false,
-        },
-      }),
-      prisma.referralDiagnosis.create({
-        data: {
-          referralId: referrals[2].id,
-          dxCode: 'E11.9',
-          dxText: 'Type 2 diabetes mellitus without complications',
-          isPrimary: false,
-        },
-      }),
-    ])
-
-    // Create referral medications
-    await Promise.all([
-      prisma.referralMedication.create({
-        data: {
-          referralId: referrals[0].id,
-          medicationId: medications[1].id, // Lisinopril
-          isHighCost: false,
-        },
-      }),
-      prisma.referralMedication.create({
-        data: {
-          referralId: referrals[1].id,
-          medicationId: medications[0].id, // Metformin
-          isHighCost: false,
-        },
-      }),
-      prisma.referralMedication.create({
-        data: {
-          referralId: referrals[1].id,
-          medicationId: medications[2].id, // Atorvastatin
-          isHighCost: true,
-        },
-      }),
-    ])
-
-    // Create referral disciplines
-    await Promise.all([
-      prisma.referralDiscipline.create({
-        data: {
-          referralId: referrals[0].id,
-          disciplineId: disciplines[0].id, // SN
-        },
-      }),
-      prisma.referralDiscipline.create({
-        data: {
-          referralId: referrals[0].id,
-          disciplineId: disciplines[1].id, // PT
-        },
-      }),
-      prisma.referralDiscipline.create({
-        data: {
-          referralId: referrals[1].id,
-          disciplineId: disciplines[0].id, // SN
-        },
-      }),
-      prisma.referralDiscipline.create({
-        data: {
-          referralId: referrals[2].id,
-          disciplineId: disciplines[0].id, // SN
-        },
-      }),
-      prisma.referralDiscipline.create({
-        data: {
-          referralId: referrals[2].id,
-          disciplineId: disciplines[2].id, // OT
-        },
-      }),
-    ])
-
-    console.log('✅ Database seeded successfully!')
-    console.log(`📊 Created ${patients.length} patients`)
-    console.log(`🏥 Created ${referrals.length} referrals`)
-    console.log(`💊 Created ${services.length} services`)
-    console.log(`🏢 Created ${payers.length} payers`)
-    console.log(`👥 Created ${disciplines.length} disciplines`)
-    console.log(`🧪 Created ${diagnoses.length} diagnoses`)
-
-  } catch (error) {
-    console.error('❌ Error seeding database:', error)
-    throw error
+  return {
+    firstName,
+    lastName,
+    age,
+    organizationId,
+    addressLine1: `${Math.floor(Math.random() * 9999) + 1} ${['Oak', 'Maple', 'Pine', 'Elm', 'Cedar'][Math.floor(Math.random() * 5)]} St`,
+    city,
+    state,
+    postalCode: postalCode.toString(),
+    phone: `+1-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`,
+    email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
+    dob: new Date(Date.now() - (age * 365 * 24 * 60 * 60 * 1000)),
+    sex: ['M', 'F'][Math.floor(Math.random() * 2)],
+    height: `${Math.floor(Math.random() * 2) + 5}'${Math.floor(Math.random() * 12)}"`,
+    weight: `${Math.floor(Math.random() * 100) + 100} lb`,
+    emergencyContact: `${['Spouse', 'Daughter', 'Son', 'Friend'][Math.floor(Math.random() * 4)]} Contact`,
+    emergencyPhone: `+1-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`,
+    medicalRecordNumber,
+    status: ['active', 'inactive', 'discharged'][Math.floor(Math.random() * 3)]
   }
 }
 
-seed()
+async function main() {
+  console.log('🌱 Starting database seeding...')
+
+  // Clear existing data
+  console.log('🧹 Clearing existing data...')
+  await prisma.referralCoverage.deleteMany()
+  await prisma.referralDiagnosis.deleteMany()
+  await prisma.referralService.deleteMany()
+  await prisma.referral.deleteMany()
+  await prisma.patient.deleteMany()
+  await prisma.userOrganization.deleteMany()
+  await prisma.user.deleteMany()
+  await prisma.organization.deleteMany()
+  await prisma.service.deleteMany()
+  await prisma.diagnosis.deleteMany()
+  await prisma.payer.deleteMany()
+  await prisma.session.deleteMany()
+
+  // Create Organizations
+  console.log('🏢 Creating organizations...')
+  const createdOrgs = []
+  const orgNames = [
+    'Exponential Healthcare Solutions',
+    'Sunrise Medical Group',
+    'Mercy Health Partners',
+    'Advanced Care Network',
+    'Community Health Alliance'
+  ]
+
+  for (const name of orgNames) {
+    const org = await prisma.organization.create({
+      data: {
+        name,
+        type: ['Hospital', 'Clinic', 'Home Health', 'Specialty Center', 'Multi-Specialty'][Math.floor(Math.random() * 5)],
+        address: `${Math.floor(Math.random() * 9999) + 1} ${['Medical', 'Health', 'Care', 'Wellness', 'Healing'][Math.floor(Math.random() * 5)]} Blvd`,
+        city: ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'][Math.floor(Math.random() * 5)],
+        state: ['NY', 'CA', 'IL', 'TX', 'AZ'][Math.floor(Math.random() * 5)],
+        zipCode: (Math.floor(Math.random() * 90000) + 10000).toString(),
+        phone: `+1-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`,
+        website: `https://www.${name.toLowerCase().replace(/\s+/g, '')}.com`
+      }
+    })
+    createdOrgs.push(org)
+    console.log(`✅ Created organization: ${org.name}`)
+  }
+
+  // Create Users
+  console.log('👥 Creating users...')
+  const createdUsers = []
+  const userEmails = [
+    'admin@exponential.com',
+    'doctor@sunrise.com',
+    'nurse@mercy.com',
+    'therapist@advanced.com',
+    'coordinator@community.com'
+  ]
+
+  for (let i = 0; i < userEmails.length; i++) {
+    const hashedPassword = await bcryptjs.hash('testing', 10)
+    const user = await prisma.user.create({
+      data: {
+        email: userEmails[i],
+        name: `${['Admin', 'Dr.', 'Nurse', 'Therapist', 'Coordinator'][i]} ${['User', 'Smith', 'Johnson', 'Williams', 'Brown'][i]}`,
+        password: hashedPassword
+      }
+    })
+    createdUsers.push(user)
+    console.log(`✅ Created user: ${user.email}`)
+  }
+
+  // Create User-Organization relationships - each user in multiple organizations
+  console.log('🔗 Linking users to multiple organizations...')
+  
+  // Define which organizations each user will be part of
+  const userOrgMappings = [
+    // admin@exponential.com - in 3 organizations
+    [
+      { userId: 0, organizationId: 0, role: 'admin' },      // Exponential (primary)
+      { userId: 0, organizationId: 1, role: 'consultant' }, // Sunrise
+      { userId: 0, organizationId: 2, role: 'advisor' }     // Mercy
+    ],
+    // doctor@sunrise.com - in 2 organizations
+    [
+      { userId: 1, organizationId: 1, role: 'doctor' },     // Sunrise (primary)
+      { userId: 1, organizationId: 3, role: 'consultant' }  // Advanced Care
+    ],
+    // nurse@mercy.com - in 3 organizations
+    [
+      { userId: 2, organizationId: 2, role: 'nurse' },      // Mercy (primary)
+      { userId: 2, organizationId: 0, role: 'nurse' },     // Exponential
+      { userId: 2, organizationId: 4, role: 'supervisor' }  // Community Health
+    ],
+    // therapist@advanced.com - in 2 organizations
+    [
+      { userId: 3, organizationId: 3, role: 'therapist' },   // Advanced Care (primary)
+      { userId: 3, organizationId: 1, role: 'consultant' }  // Sunrise
+    ],
+    // coordinator@community.com - in 3 organizations
+    [
+      { userId: 4, organizationId: 4, role: 'coordinator' }, // Community Health (primary)
+      { userId: 4, organizationId: 0, role: 'coordinator' }, // Exponential
+      { userId: 4, organizationId: 2, role: 'coordinator' }  // Mercy
+    ]
+  ]
+
+  for (const userOrgs of userOrgMappings) {
+    for (const userOrg of userOrgs) {
+      await prisma.userOrganization.create({
+        data: {
+          userId: createdUsers[userOrg.userId].id,
+          organizationId: createdOrgs[userOrg.organizationId].id,
+          role: userOrg.role,
+          isActive: true,
+          joinedAt: new Date()
+        }
+      })
+      console.log(`✅ Linked ${createdUsers[userOrg.userId].email} to ${createdOrgs[userOrg.organizationId].name} as ${userOrg.role}`)
+    }
+  }
+
+  // Create Patients for each organization with completely different counts
+  console.log('🏥 Creating patients...')
+  const patientCounts = [8, 23, 17, 31, 12] // Completely different patient counts for each org
+  
+  for (let orgIndex = 0; orgIndex < createdOrgs.length; orgIndex++) {
+    const org = createdOrgs[orgIndex]
+    const patientCount = patientCounts[orgIndex]
+    
+    for (let i = 0; i < patientCount; i++) {
+      const patientData = generatePatientData(org.id, i)
+      
+      try {
+        const patient = await prisma.patient.upsert({
+          where: { medicalRecordNumber: patientData.medicalRecordNumber },
+          update: {},
+          create: patientData
+        })
+        console.log(`✅ Created patient: ${patient.firstName} ${patient.lastName} for ${org.name}`)
+      } catch (error) {
+        console.log(`⚠️ Skipped patient ${patientData.firstName} ${patientData.lastName} (likely duplicate)`)
+      }
+    }
+    console.log(`✅ Created ${patientCount} patients for ${org.name}`)
+  }
+
+  // Create basic reference data for dashboard functionality
+  console.log('📋 Creating reference data...')
+  
+  // Create Services
+  const services = [
+    { name: 'Home Health Nursing', category: 'Home Health', description: 'Skilled nursing care in the home' },
+    { name: 'Physical Therapy', category: 'Therapy', description: 'Physical rehabilitation services' },
+    { name: 'Occupational Therapy', category: 'Therapy', description: 'Daily living skills therapy' },
+    { name: 'Speech Therapy', category: 'Therapy', description: 'Communication and swallowing therapy' },
+    { name: 'Medical Social Work', category: 'Support', description: 'Social and emotional support services' }
+  ]
+
+  const createdServices = []
+  for (const serviceData of services) {
+    const service = await prisma.service.create({
+      data: serviceData
+    })
+    createdServices.push(service)
+  }
+  console.log('✅ Created services')
+
+  // Create Diagnoses
+  const diagnoses = [
+    { code: 'E11.9', display: 'Type 2 diabetes mellitus without complications', category: 'Endocrine' },
+    { code: 'I10', display: 'Essential (primary) hypertension', category: 'Cardiovascular' },
+    { code: 'E66.9', display: 'Obesity, unspecified', category: 'Endocrine' },
+    { code: 'J44.9', display: 'Chronic obstructive pulmonary disease, unspecified', category: 'Respiratory' },
+    { code: 'I25.10', display: 'Atherosclerotic heart disease without angina pectoris', category: 'Cardiovascular' }
+  ]
+
+  for (const diagnosisData of diagnoses) {
+    await prisma.diagnosis.upsert({
+      where: { code: diagnosisData.code },
+      update: {},
+      create: diagnosisData
+    })
+  }
+  console.log('✅ Created diagnoses')
+
+  // Create Payers
+  const payers = [
+    { name: 'Medicare', type: 'Government' },
+    { name: 'Medicaid', type: 'Government' },
+    { name: 'Blue Cross Blue Shield', type: 'Commercial' },
+    { name: 'Aetna', type: 'Commercial' },
+    { name: 'UnitedHealth', type: 'Commercial' }
+  ]
+
+  for (const payerData of payers) {
+    await prisma.payer.upsert({
+      where: { name: payerData.name },
+      update: {},
+      create: payerData
+    })
+  }
+  console.log('✅ Created payers')
+
+  // Create referrals for each organization's patients with completely different counts
+  console.log('📝 Creating referrals for each organization...')
+  const referralPercentages = [0.62, 0.78, 0.53, 0.87, 0.41] // Completely different referral rates for each org
+  
+  for (let orgIndex = 0; orgIndex < createdOrgs.length; orgIndex++) {
+    const org = createdOrgs[orgIndex]
+    console.log(`🏥 Creating referrals for ${org.name}...`)
+    
+    // Get all patients for this organization
+    const orgPatients = await prisma.patient.findMany({
+      where: { organizationId: org.id }
+    })
+    
+    // Create referrals for different percentages of patients in each organization
+    const referralCount = Math.floor(orgPatients.length * referralPercentages[orgIndex])
+    const patientsToRefer = orgPatients.slice(0, referralCount)
+    
+    for (let i = 0; i < patientsToRefer.length; i++) {
+      const patient = patientsToRefer[i]
+      
+      try {
+        const referral = await prisma.referral.create({
+          data: {
+            patientId: patient.id,
+            livesWith: ['Spouse', 'Alone', 'Family'][Math.floor(Math.random() * 3)],
+            ecName: patient.emergencyContact || 'Emergency Contact',
+            ecPhone: patient.emergencyPhone || '+1-555-000-0000',
+            ecRelation: ['Spouse', 'Daughter', 'Son', 'Friend'][Math.floor(Math.random() * 4)],
+            ntaScore: ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)],
+            hmoPlanType: ['HMO', 'PPO', 'Medicare Advantage'][Math.floor(Math.random() * 3)],
+            medicareHmoProvider: ['HUMANA', 'AETNA', 'UNITEDHEALTH'][Math.floor(Math.random() * 3)],
+            primaryDxCode: diagnoses[Math.floor(Math.random() * diagnoses.length)].code,
+            primaryDxText: diagnoses[Math.floor(Math.random() * diagnoses.length)].display
+          }
+        })
+
+        // Add some services to the referral
+        const randomServices = createdServices.slice(0, Math.floor(Math.random() * 3) + 1)
+        for (const service of randomServices) {
+          await prisma.referralService.create({
+            data: {
+              referralId: referral.id,
+              serviceId: service.id,
+              status: ['pending', 'approved', 'completed'][Math.floor(Math.random() * 3)]
+            }
+          })
+        }
+
+        // Add some diagnoses to the referral
+        const randomDiagnoses = diagnoses.slice(0, Math.floor(Math.random() * diagnoses.length))
+        for (let j = 0; j < randomDiagnoses.length; j++) {
+          await prisma.referralDiagnosis.create({
+            data: {
+              referralId: referral.id,
+              diagnosisId: (await prisma.diagnosis.findUnique({ where: { code: randomDiagnoses[j].code } }))!.id,
+              isPrimary: j === 0 // First diagnosis is primary
+            }
+          })
+        }
+
+        // Add some coverage to the referral
+        const randomPayer = payers[Math.floor(Math.random() * payers.length)]
+        await prisma.referralCoverage.create({
+          data: {
+            referralId: referral.id,
+            payerId: (await prisma.payer.findUnique({ where: { name: randomPayer.name } }))!.id,
+            policyNumber: `POL${Math.floor(Math.random() * 900000) + 100000}`,
+            groupNumber: `GRP${Math.floor(Math.random() * 90000) + 10000}`,
+            status: ['pending', 'approved', 'denied'][Math.floor(Math.random() * 3)]
+          }
+        })
+
+        console.log(`✅ Created referral for ${patient.firstName} ${patient.lastName} in ${org.name}`)
+      } catch (error) {
+        console.log(`⚠️ Failed to create referral for ${patient.firstName} ${patient.lastName}: ${error}`)
+      }
+    }
+    
+    console.log(`✅ Created ${patientsToRefer.length} referrals for ${org.name} (${Math.round(referralPercentages[orgIndex] * 100)}% of patients)`)
+  }
+
+  console.log('🎉 Database seeding completed successfully!')
+  console.log('\n📊 Summary of created data:')
+  console.log('🏢 Organizations: 5')
+  console.log('👥 Users: 5 (each in 2-3 organizations)')
+  console.log('🏥 Patients: 8, 23, 17, 31, 12 (different for each org)')
+  console.log('📝 Referrals: Varying percentages (62%, 78%, 53%, 87%, 41%)')
+}
+
+main()
   .catch((e) => {
-    console.error(e)
+    console.error('❌ Error during seeding:', e)
     process.exit(1)
   })
   .finally(async () => {

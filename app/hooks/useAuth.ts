@@ -6,6 +6,17 @@ interface User {
     email: string;
     name: string;
     organizationId?: string;
+    primaryOrganization?: {
+        id: string;
+        name: string;
+        type: string;
+    } | null;
+    organizations?: Array<{
+        id: string;
+        name: string;
+        type: string;
+        isActive: boolean;
+    }>;
 }
 
 interface AuthState {
@@ -25,9 +36,16 @@ export function useAuth() {
     // Check if user is authenticated
     const checkAuth = useCallback(async () => {
         try {
-            setAuthState(prev => ({ ...prev, loading: true }));
+            // Add timeout for faster failure detection
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
             
-            const response = await fetch('/api/auth/session');
+            const response = await fetch('/api/auth/session', {
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
             const data = await response.json();
             
             if (data.authenticated && data.user) {
@@ -44,7 +62,11 @@ export function useAuth() {
                 });
             }
         } catch (error) {
-            console.error('Auth check error:', error);
+            if (error.name === 'AbortError') {
+                console.log('Auth check timed out, treating as unauthenticated');
+            } else {
+                console.error('Auth check error:', error);
+            }
             setAuthState({
                 user: null,
                 authenticated: false,

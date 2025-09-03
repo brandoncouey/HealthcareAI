@@ -32,14 +32,39 @@ export interface PatientOverview {
   emergencyContact: { name: string; phone: string; relation: string }
 }
 
-export async function getDashboardStats(): Promise<DashboardStats> {
+export async function getDashboardStats(organizationId?: string): Promise<DashboardStats> {
   try {
-    // Get basic counts
+    // Build organization filter
+    const orgFilter = organizationId ? { organizationId } : {}
+    
+    // Get basic counts filtered by organization
     const [totalPatients, totalReferrals, totalServices, totalPayers] = await Promise.all([
-      prisma.patient.count(),
-      prisma.referral.count(),
-      prisma.service.count(),
-      prisma.payer.count(),
+      prisma.patient.count({ where: orgFilter }),
+      prisma.referral.count({ 
+        where: organizationId ? {
+          patient: { organizationId }
+        } : {}
+      }),
+      // Services used by this organization's referrals
+      organizationId ? 
+        prisma.referralService.count({
+          where: {
+            referral: {
+              patient: { organizationId }
+            }
+          }
+        }) : 
+        prisma.service.count(), // Global count if no organization
+      // Payers used by this organization's referrals  
+      organizationId ? 
+        prisma.referralCoverage.count({
+          where: {
+            referral: {
+              patient: { organizationId }
+            }
+          }
+        }) : 
+        prisma.payer.count(), // Global count if no organization
     ])
 
     // Get active referrals (created in last 30 days)
@@ -51,6 +76,9 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         createdAt: {
           gte: thirtyDaysAgo,
         },
+        ...(organizationId && {
+          patient: { organizationId }
+        })
       },
     })
 
@@ -58,25 +86,38 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     const recentReferrals = await prisma.referral.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
+      where: organizationId ? {
+        patient: { organizationId }
+      } : {},
       include: {
         patient: true,
       },
     })
 
-    // Get service distribution
+    // Get service distribution with actual service names
     const serviceDistribution = await prisma.referralService.groupBy({
       by: ['serviceId'],
       _count: {
         serviceId: true,
       },
+      where: organizationId ? {
+        referral: {
+          patient: { organizationId }
+        }
+      } : {},
     })
 
-    // Get payer distribution
+    // Get payer distribution with actual payer names
     const payerDistribution = await prisma.referralCoverage.groupBy({
-      by: ['planId'],
+      by: ['payerId'],
       _count: {
-        planId: true,
+        payerId: true,
       },
+      where: organizationId ? {
+        referral: {
+          patient: { organizationId }
+        }
+      } : {},
     })
 
     // Get referral trends (last 6 months)
@@ -92,10 +133,29 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         createdAt: {
           gte: sixMonthsAgo,
         },
+        ...(organizationId && {
+          patient: { organizationId }
+        })
       },
       orderBy: {
         createdAt: 'asc',
       },
+    })
+
+    // Get actual service names for distribution
+    const serviceNames = await prisma.service.findMany({
+      where: {
+        id: { in: serviceDistribution.map(sd => sd.serviceId) }
+      },
+      select: { id: true, name: true }
+    })
+
+    // Get actual payer names for distribution
+    const payerNames = await prisma.payer.findMany({
+      where: {
+        id: { in: payerDistribution.map(pd => pd.payerId) }
+      },
+      select: { id: true, name: true }
     })
 
     return {
@@ -112,14 +172,20 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         createdAt: ref.createdAt,
         services: [],
       })),
-      serviceDistribution: serviceDistribution.map(sd => ({
-        service: `Service ${sd.serviceId}`,
-        count: sd._count.serviceId,
-      })),
-      payerDistribution: payerDistribution.map(pd => ({
-        payer: `Plan ${pd.planId}`,
-        count: pd._count.planId,
-      })),
+      serviceDistribution: serviceDistribution.map(sd => {
+        const service = serviceNames.find(s => s.id === sd.serviceId)
+        return {
+          service: service?.name || `Service ${sd.serviceId}`,
+          count: sd._count.serviceId,
+        }
+      }),
+      payerDistribution: payerDistribution.map(pd => {
+        const payer = payerNames.find(p => p.id === pd.payerId)
+        return {
+          payer: payer?.name || `Payer ${pd.payerId}`,
+          count: pd._count.payerId,
+        }
+      }),
       referralTrends: referralTrends.map(rt => ({
         month: rt.createdAt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         count: rt._count.id,
@@ -210,9 +276,10 @@ export async function getPatientOverview(patientId: string): Promise<PatientOver
   }
 }
 
-export async function getAllPatients() {
+export async function getAllPatients(organizationId?: string) {
   try {
     const patients = await prisma.patient.findMany({
+      where: organizationId ? { organizationId } : {},
       orderBy: {
         lastName: 'asc',
       },

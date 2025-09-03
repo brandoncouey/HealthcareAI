@@ -3,7 +3,10 @@ import {getDashboardStats} from '@/app/lib/dashboard-service'
 
 export async function GET(request: NextRequest) {
     try {
-        const stats = await getDashboardStats()
+        const { searchParams } = new URL(request.url)
+        const organizationId = searchParams.get('organizationId')
+        
+        const stats = await getDashboardStats(organizationId || undefined)
         return NextResponse.json(stats)
     } catch (error) {
         console.error('Error fetching dashboard stats:', error)

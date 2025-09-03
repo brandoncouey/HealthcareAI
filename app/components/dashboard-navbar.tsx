@@ -62,11 +62,29 @@ function NavItem({ icon: Icon, label, href, active }: NavItemProps) {
 }
 
 interface DashboardNavbarProps {
-  searchTerm: string
-  onSearchChange: (value: string) => void
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    primaryOrganization?: {
+      id: string;
+      name: string;
+      type: string;
+    } | null;
+    organizations?: Array<{
+      id: string;
+      name: string;
+      type: string;
+      isActive: boolean;
+    }>;
+  } | null;
+  onSearchChange?: (value: string) => void;
+  searchTerm?: string;
   theme: "dark" | "light"
   onThemeToggle: () => void
   organizationName?: string
+  currentOrganizationId?: string
+  onOrganizationChange?: (organizationId: string) => void
 }
 
 export default function DashboardNavbar({ 
@@ -74,7 +92,9 @@ export default function DashboardNavbar({
   onSearchChange, 
   theme, 
   onThemeToggle,
-  organizationName
+  organizationName,
+  currentOrganizationId,
+  onOrganizationChange
 }: DashboardNavbarProps) {
   const { user, logout } = useAuth();
   
@@ -117,8 +137,8 @@ export default function DashboardNavbar({
                   type="text"
                   placeholder="Search patients, diagnoses..."
                   className="bg-transparent border-none focus:outline-none text-sm w-56 placeholder:text-slate-500 focus:placeholder:text-slate-400 text-slate-200 transition-all duration-300"
-                  value={searchTerm}
-                  onChange={(e) => onSearchChange(e.target.value)}
+                  value={searchTerm || ''}
+                  onChange={(e) => onSearchChange?.(e.target.value)}
                 />
               </div>
             </div>
@@ -165,24 +185,56 @@ export default function DashboardNavbar({
 
             {/* User Avatar with Organization */}
             <div className="flex items-center space-x-3">
-              {organizationName && (
+              {/* Organization Dropdown */}
+              {user?.organizations && user.organizations.length > 0 && (
                 <div className="hidden lg:block">
-                  <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-slate-800/60 to-slate-700/60 rounded-xl blur-sm group-hover:blur-md transition-all duration-300"></div>
-                    <div className="relative bg-slate-800/80 border border-slate-600/50 rounded-xl px-4 py-3 backdrop-blur-sm group-hover:border-slate-500/70 group-hover:bg-slate-800/90 transition-all duration-300">
-                      <div className="flex items-center space-x-3">
-                        <div className="flex-shrink-0">
-                          <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full"></div>
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-xs text-slate-400 font-medium tracking-wide uppercase">Organization</div>
-                          <div className="text-sm text-slate-200 font-semibold max-w-36 truncate leading-tight" title={organizationName}>
-                            {organizationName}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <div className="relative group cursor-pointer">
+                        <div className="absolute inset-0 bg-gradient-to-r from-slate-800/60 to-slate-700/60 rounded-xl blur-sm group-hover:blur-md transition-all duration-300"></div>
+                        <div className="relative bg-slate-800/80 border border-slate-600/50 rounded-xl px-4 py-3 backdrop-blur-sm group-hover:border-slate-500/70 group-hover:bg-slate-800/90 transition-all duration-300">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex-shrink-0">
+                              <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full"></div>
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-xs text-slate-400 font-medium tracking-wide uppercase">Organization</div>
+                                                          <div className="text-sm text-slate-200 font-semibold max-w-36 truncate leading-tight" title={currentOrganizationId ? user.organizations?.find(org => org.id === currentOrganizationId)?.name : user.primaryOrganization?.name || user.organizations?.[0]?.name}>
+                              {currentOrganizationId ? user.organizations?.find(org => org.id === currentOrganizationId)?.name : user.primaryOrganization?.name || user.organizations?.[0]?.name}
+                            </div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-slate-900/95 border-slate-700/50 mt-2 backdrop-blur-sm shadow-xl w-64">
+                      <div className="px-3 py-2 border-b border-slate-700/30">
+                        <div className="text-xs text-slate-400 font-medium tracking-wide uppercase">Your Organizations</div>
+                      </div>
+                      {user.organizations.map((org, index) => (
+                        <DropdownMenuItem 
+                          key={org.id}
+                          onClick={() => onOrganizationChange?.(org.id)}
+                          className={`text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 rounded-lg mx-2 my-1 ${
+                            org.id === currentOrganizationId ? 'border-l-2 border-l-cyan-400/50 bg-slate-800/20' : ''
+                          }`}
+                        >
+                          <div className="flex items-center space-x-3 w-full">
+                            <div className={`w-2 h-2 rounded-full ${
+                              org.id === currentOrganizationId ? 'bg-cyan-400' : 'bg-slate-500'
+                            }`}></div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-semibold truncate">{org.name}</div>
+                              <div className="text-xs text-slate-400 capitalize">{org.type}</div>
+                            </div>
+                            {org.id === currentOrganizationId && (
+                              <div className="text-xs text-cyan-400 font-medium">Current</div>
+                            )}
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               )}
               <DropdownMenu>
