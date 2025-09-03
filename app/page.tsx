@@ -6,11 +6,9 @@
  * Authentication redirects are handled client-side.
  */
 
-// Layout components
 import Header from '@/app/components/layout/header';
 import Footer from '@/app/components/layout/footer';
 
-// Home page components
 import CursorEffects from '@/app/components/cursor-effects';
 import VideoModal from '@/app/components/video-modal';
 import HeroSection from '@/app/components/home/hero-section';
@@ -18,11 +16,9 @@ import ProblemSection from '@/app/components/home/problem-section';
 import SolutionSection from '@/app/components/home/solution-section';
 import BookDemoSection from '@/app/components/home/book-demo-section';
 
-// Force static generation for better performance
 export const dynamic = 'force-static'
 export const revalidate = false
 
-// Floating particles component for home page
 const FloatingParticles = () => {
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -31,7 +27,6 @@ const FloatingParticles = () => {
       <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 rounded-full blur-xl animate-float-medium" style={{ animationDelay: '2s' }}></div>
       <div className="absolute bottom-32 left-1/4 w-28 h-28 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-full blur-xl animate-float-fast" style={{ animationDelay: '4s' }}></div>
       
-      {/* Many small floating particles with different movement patterns */}
       {Array.from({ length: 50 }).map((_, i) => (
         <div
           key={i}

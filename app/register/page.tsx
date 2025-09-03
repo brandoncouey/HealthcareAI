@@ -2,7 +2,6 @@ import RegisterForm from '@/app/components/forms/register-form';
 import Header from "@/app/components/layout/header";
 import Footer from "@/app/components/layout/footer";
 
-// Force static generation for better performance
 export const dynamic = 'force-static'
 export const revalidate = false
 
