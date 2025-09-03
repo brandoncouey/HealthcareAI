@@ -96,11 +96,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create session and set cookie
         try {
             const { rawToken, expiresAt } = await createSession(user.id, request);
             
-            // Get user's organizations
             const userOrgs = await prisma.userOrganization.findMany({
                 where: {
                     userId: user.id,
@@ -110,10 +108,11 @@ export async function POST(request: NextRequest) {
                     organization: true
                 },
                 orderBy: {
-                    joinedAt: 'asc' // First joined organization is primary
+                    joinedAt: 'asc'
                 }
             });
             
+            // @ts-ignore
             const primaryOrganization = userOrgs.length > 0 ? userOrgs[0].organization : null;
             const organizations = userOrgs.map(uo => ({
                 id: uo.organization.id,

@@ -132,10 +132,24 @@ export function useAuth() {
         checkAuth();
     }, [checkAuth]);
 
+    // Update user data function
+    const updateUserData = useCallback((newUserData: Partial<User>) => {
+        console.log('updateUserData called with:', newUserData)
+        setAuthState(prev => {
+            const updatedUser = prev.user ? { ...prev.user, ...newUserData } : null
+            console.log('Updated user state:', updatedUser)
+            return {
+                ...prev,
+                user: updatedUser
+            }
+        });
+    }, []);
+
     return {
         ...authState,
         login,
         logout,
-        checkAuth
+        checkAuth,
+        updateUserData
     };
 }

@@ -47,7 +47,7 @@ interface UserSettings {
 }
 
 export default function SettingsPage() {
-  const { user, authenticated, loading: authLoading } = useAuth()
+  const { user, authenticated, loading: authLoading, updateUserData } = useAuth()
   const { toast } = useToast()
   const [theme, setTheme] = useState<"dark" | "light">("dark")
   const [isLoading, setIsLoading] = useState(false)
@@ -83,6 +83,7 @@ export default function SettingsPage() {
   // Initialize settings with user data
   useEffect(() => {
     if (user) {
+      console.log('User data updated in settings:', user)
       setSettings(prev => ({
         ...prev,
         email: user.email || "",
@@ -195,6 +196,13 @@ export default function SettingsPage() {
       const data = await response.json()
 
       if (data.success) {
+        // Update the user data in the auth context to reflect changes immediately
+        console.log('Updating user data with:', { name: settings.name, phone: settings.phone })
+        updateUserData({
+          name: settings.name,
+          phone: settings.phone
+        })
+        
         toast({
           title: "Settings saved",
           description: "Your settings have been updated successfully.",
@@ -238,6 +246,9 @@ export default function SettingsPage() {
           theme={theme}
           onThemeToggle={toggleTheme}
           user={user}
+          onOrganizationChange={() => {}} // Settings page doesn't need organization switching
+          currentOrganizationId={user?.primaryOrganization?.id || user?.organizations?.[0]?.id}
+          organizationName={user?.primaryOrganization?.name || user?.organizations?.[0]?.name}
         />
 
         <div className="container mx-auto p-6">
@@ -307,14 +318,10 @@ export default function SettingsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="email" className="text-slate-300">Email Address</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={settings.email}
-                          onChange={(e) => handleSettingChange('email', e.target.value)}
-                          className="bg-slate-800/50 border-slate-600/50 text-slate-200 focus:border-cyan-500/50"
-                          placeholder="Enter your email"
-                        />
+                        <div className="px-4 py-3 bg-slate-800/30 border border-slate-600/30 rounded-xl text-slate-400 cursor-not-allowed">
+                          {settings.email}
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">Email address cannot be changed</p>
                       </div>
                       <div>
                         <Label htmlFor="phone" className="text-slate-300">Phone Number</Label>

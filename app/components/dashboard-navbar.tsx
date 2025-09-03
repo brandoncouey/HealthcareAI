@@ -68,6 +68,7 @@ interface DashboardNavbarProps {
     id: string;
     name: string;
     email: string;
+    role: 'SUPERADMIN' | 'ADMIN' | 'MEMBER';
     primaryOrganization?: {
       id: string;
       name: string;
@@ -78,6 +79,7 @@ interface DashboardNavbarProps {
       name: string;
       type: string;
       isActive: boolean;
+      role: 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER';
     }>;
   } | null;
   onSearchChange?: (value: string) => void;
@@ -100,6 +102,9 @@ export default function DashboardNavbar({
   onOrganizationChange
 }: DashboardNavbarProps) {
   const { logout } = useAuth();
+  const [organizationDropdownOpen, setOrganizationDropdownOpen] = useState(false);
+  
+  console.log('Navbar render - user name:', user?.name, 'user:', user)
   
   return (
     <nav className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-slate-700/50 sticky top-0 z-40 shadow-lg backdrop-blur-sm relative overflow-hidden">
@@ -191,7 +196,7 @@ export default function DashboardNavbar({
               {/* Organization Dropdown */}
                               {user?.organizations && user.organizations.length > 0 && (
                   <div className="hidden lg:block organization-dropdown">
-                                    <DropdownMenu>
+                                    <DropdownMenu open={organizationDropdownOpen} onOpenChange={setOrganizationDropdownOpen}>
                     <DropdownMenuTrigger asChild>
                       <div className="relative group cursor-pointer">
                         <div className="absolute inset-0 bg-gradient-to-r from-slate-800/60 to-slate-700/60 rounded-xl blur-sm group-hover:blur-md transition-all duration-300"></div>
@@ -217,7 +222,10 @@ export default function DashboardNavbar({
                       {user.organizations.map((org, index) => (
                         <DropdownMenuItem 
                           key={org.id}
-                          onClick={() => onOrganizationChange?.(org.id)}
+                          onClick={() => {
+                            onOrganizationChange?.(org.id)
+                            setOrganizationDropdownOpen(false)
+                          }}
                           className={`text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 rounded-lg mx-2 my-1 ${
                             org.id === currentOrganizationId ? 'border-l-2 border-l-cyan-400/50 bg-slate-800/20' : ''
                           }`}

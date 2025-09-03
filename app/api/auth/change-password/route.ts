@@ -8,7 +8,6 @@ export async function POST(request: NextRequest) {
   try {
     const { currentPassword, newPassword } = await request.json()
 
-    // Validate input
     if (!currentPassword || !newPassword) {
       return NextResponse.json(
         { success: false, error: 'Current password and new password are required' },
@@ -23,7 +22,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the session to identify the user
     const sessionResponse = await fetch(`${request.nextUrl.origin}/api/auth/session`, {
       headers: {
         cookie: request.headers.get('cookie') || '',
@@ -48,7 +46,6 @@ export async function POST(request: NextRequest) {
 
     const userId = sessionData.user.id
 
-    // Get the user from the database
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { password: true }
@@ -61,7 +58,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify current password
     const isCurrentPasswordValid = await compare(currentPassword, user.password)
     
     if (!isCurrentPasswordValid) {
@@ -71,10 +67,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Hash the new password
     const hashedNewPassword = await hash(newPassword, 12)
 
-    // Update the user's password
     await prisma.user.update({
       where: { id: userId },
       data: { password: hashedNewPassword }

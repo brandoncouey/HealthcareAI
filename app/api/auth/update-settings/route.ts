@@ -7,7 +7,6 @@ export async function POST(request: NextRequest) {
   try {
     const settings = await request.json()
 
-    // Validate input
     if (!settings) {
       return NextResponse.json(
         { success: false, error: 'Settings data is required' },
@@ -15,7 +14,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the session to identify the user
     const sessionResponse = await fetch(`${request.nextUrl.origin}/api/auth/session`, {
       headers: {
         cookie: request.headers.get('cookie') || '',
@@ -30,7 +28,6 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionData = await sessionResponse.json()
-    
     if (!sessionData.authenticated || !sessionData.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
@@ -39,17 +36,12 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = sessionData.user.id
-
-    // Prepare update data
     const updateData: any = {}
 
-    // Basic profile fields
     if (settings.name !== undefined) updateData.name = settings.name
-    if (settings.email !== undefined) updateData.email = settings.email
+    // Email cannot be changed - removed from updateData
     if (settings.phone !== undefined) updateData.phone = settings.phone
 
-    // Extended settings (stored as JSON in a dedicated field or separate table)
-    // For now, we'll store them in a JSON field called 'settings'
     if (settings.timezone || settings.language || settings.notifications || settings.privacy || settings.theme) {
       updateData.settings = {
         timezone: settings.timezone,
@@ -60,7 +52,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Update the user
     await prisma.user.update({
       where: { id: userId },
       data: updateData

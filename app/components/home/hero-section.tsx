@@ -46,14 +46,18 @@ export default function HeroSection() {
               <div 
                 className="aspect-video bg-gradient-to-br from-slate-800 to-black rounded-lg flex items-center justify-center border border-slate-700/30 relative overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300"
                 id="dashboard-preview-btn"
+                style={{
+                  backgroundImage: 'url(/dashboard-preview.png)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-700 to-slate-900 rounded-lg"></div>
-                <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center hover:bg-black/50 transition-colors duration-300">
+                <div className="absolute inset-0 bg-black/20 rounded-lg flex items-center justify-center">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-[#00B5E2] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg hover:bg-[#00B5E2]/80 transition-colors duration-300">
-                      <Play className="h-8 w-8 text-white" />
+                    <div className="w-16 h-16 bg-[#00B5E2] rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl hover:bg-[#00B5E2]/80 transition-colors duration-300 ring-4 ring-[#00B5E2]/20">
+                      <Play className="h-8 w-8 text-white drop-shadow-lg" />
                     </div>
-                    <p className="text-slate-100 font-medium">Watch Promo (1:05)</p>
+                    <p className="text-white font-semibold text-lg drop-shadow-lg">Watch Promo (1:05)</p>
                   </div>
                 </div>
               </div>

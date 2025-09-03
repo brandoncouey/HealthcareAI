@@ -28,7 +28,6 @@ async function getSession() {
     if (!session) return null;
 
     if (session.expiresAt <= new Date()) {
-        // Expired: best-effort cleanup in DB
         await prisma.session.delete({ where: { tokenHash } }).catch(() => {});
         return null;
     }
@@ -44,7 +43,6 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ authenticated: false }, { status: 200 });
         }
 
-        // Get user's organizations
         const userOrgs = await prisma.userOrganization.findMany({
             where: {
                 userId: session.user.id,
@@ -54,13 +52,17 @@ export async function GET(request: NextRequest) {
                 organization: true
             },
             orderBy: {
-                joinedAt: 'asc' // First joined organization is primary
+                joinedAt: 'asc'
             }
         });
-        
+
+        //TODO make better type safe
         const primaryOrganization = userOrgs.length > 0 ? {
+            // @ts-ignore
             id: userOrgs[0].organization.id,
+            // @ts-ignore
             name: userOrgs[0].organization.name,
+            // @ts-ignore
             type: userOrgs[0].organization.type
         } : null;
         

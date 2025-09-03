@@ -6,7 +6,6 @@ export async function GET(request: NextRequest) {
     const organizationId = searchParams.get('organizationId')
     const timeRange = searchParams.get('timeRange') || '30d'
 
-    // For now, return comprehensive referral-focused mock data
     const mockData = {
       referralStats: {
         total: 60,

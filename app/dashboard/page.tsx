@@ -236,6 +236,10 @@ export default function Dashboard() {
   // Handle organization change
   const handleOrganizationChange = (organizationId: string) => {
     setCurrentOrganizationId(organizationId)
+    // Clear existing data to show loading state
+    setStats(null)
+    setPatients([])
+    setIsLoading(true)
   }
 
   // Show loading state while checking authentication
@@ -253,6 +257,9 @@ export default function Dashboard() {
         theme={theme}
         onThemeToggle={toggleTheme}
         user={user}
+        onOrganizationChange={handleOrganizationChange}
+        currentOrganizationId={currentOrganizationId}
+        organizationName={currentOrganizationId ? user?.organizations?.find(org => org.id === currentOrganizationId)?.name : user?.primaryOrganization?.name || user?.organizations?.[0]?.name}
       />
       
       {/* Particle Canvas Background */}
