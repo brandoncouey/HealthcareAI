@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
         const session = await getSession();
         
         if (!session) {
-            return NextResponse.json({ authenticated: false }, { status: 401 });
+            return NextResponse.json({ authenticated: false }, { status: 200 });
         }
 
         // Get user's organizations
@@ -58,12 +58,18 @@ export async function GET(request: NextRequest) {
             }
         });
         
-        const primaryOrganization = userOrgs.length > 0 ? userOrgs[0].organization : null;
+        const primaryOrganization = userOrgs.length > 0 ? {
+            id: userOrgs[0].organization.id,
+            name: userOrgs[0].organization.name,
+            type: userOrgs[0].organization.type
+        } : null;
+        
         const organizations = userOrgs.map(uo => ({
             id: uo.organization.id,
             name: uo.organization.name,
             type: uo.organization.type,
-            isActive: uo.isActive
+            isActive: uo.isActive,
+            role: uo.role
         }));
 
         return NextResponse.json({
@@ -72,6 +78,7 @@ export async function GET(request: NextRequest) {
                 id: session.user.id,
                 name: session.user.name,
                 email: session.user.email,
+                role: session.user.role,
                 primaryOrganization,
                 organizations
             }

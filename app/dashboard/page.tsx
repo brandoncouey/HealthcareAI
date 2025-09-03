@@ -1,86 +1,47 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
-import {
-  Activity,
-  AlertCircle,
+import { useAuth } from '@/app/hooks/useAuth'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
+import { Button } from '@/app/components/ui/button'
+import { Badge } from '@/app/components/ui/badge'
+import { Avatar, AvatarFallback } from '@/app/components/ui/avatar'
+import { Input } from '@/app/components/ui/input'
+import { 
+  Users, 
+  FileText, 
+  Database, 
+  PieChart, 
+  UserPlus, 
+  Download, 
   BarChart3,
-  Bell,
-  CircleOff,
-  Command,
-  Cpu,
-  Database,
-  Download,
-  FileText,
-  Globe,
-  HardDrive,
-  Heart,
-  Home,
-  LineChart,
-  Lock,
-  LogOut,
-  type LucideIcon,
-  MessageSquare,
-  Mic,
-  Moon,
-  PieChart,
-  Plus,
-  Radio,
-  RefreshCw,
   Search,
-  Settings,
-  Shield,
-  Sun,
-  Terminal,
-  TrendingUp,
-  Users,
-  UserPlus,
-  Wifi,
-  Zap,
-} from "lucide-react"
+  Building2,
+  Activity,
+  Shield
+} from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState, useRef, useMemo } from 'react'
+import DashboardNavbar from '@/app/components/dashboard-navbar'
 
-import { Button } from "@/app/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card"
-import { Progress } from "@/app/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/app/components/ui/tooltip"
-import { Badge } from "@/app/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
-import { Slider } from "@/app/components/ui/slider"
-import { Switch } from "@/app/components/ui/switch"
-import { Label } from "@/app/components/ui/label"
-import Image from "next/image"
-import DashboardNavbar from "@/app/components/dashboard-navbar"
-import { DashboardSkeleton } from "@/app/components/ui/skeleton"
-import { useAuth } from "@/app/hooks/useAuth"
-
-// Utility functions
-const formatDate = (date: Date | string) => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date
-  return dateObj.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
+// Helper functions
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString()
 }
 
+// Types
 interface DashboardStats {
   totalPatients: number
-  totalReferrals: number
   activeReferrals: number
   totalServices: number
-  totalPayers: number
   recentReferrals: Array<{
     id: string
     patientName: string
     primaryDiagnosis: string
-    ntaScore: string
-    createdAt: Date
-    services: Array<{ label: string; present: boolean }>
+    ntaScore: number
+    createdAt: string
+    services: Array<{ service: string; present: boolean }>
   }>
   serviceDistribution: Array<{ service: string; count: number }>
-  payerDistribution: Array<{ payer: string; count: number }>
-  referralTrends: Array<{ month: string; count: number }>
 }
 
 interface Patient {
@@ -88,32 +49,57 @@ interface Patient {
   firstName: string
   lastName: string
   age: number
-  primaryDiagnosis: string
-  ntaScore: string
-  services: string
-  emergencyContact: string
   city: string
   state: string
+  ntaScore: number
+}
+
+interface Particle {
+  x: number
+  y: number
+  size: number
+  speedX: number
+  speedY: number
+  color: string
 }
 
 export default function Dashboard() {
   const { user, authenticated, loading: authLoading } = useAuth()
+  const router = useRouter()
+  
+  // All hooks must be called before any conditional logic
   const [theme, setTheme] = useState<"dark" | "light">("dark")
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [patients, setPatients] = useState<Patient[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-
   const [currentOrganizationId, setCurrentOrganizationId] = useState<string | undefined>(undefined)
-
   const canvasRef = useRef<HTMLCanvasElement>(null)
-
+  
+  // Filter patients based on search term - must be called before any conditional logic
+  const filteredPatients = useMemo(() => {
+    if (!searchTerm) return patients
+    return patients.filter(patient => 
+      patient.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.state.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }, [patients, searchTerm])
+  
+  // Toggle theme - must be called before any conditional logic
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark")
+  }
+  
+  // All useEffect hooks must also be called before any conditional logic
   // Redirect to login if not authenticated
   useEffect(() => {
-    if (!authLoading && !authenticated) {
-      window.location.href = '/login'
+    // Only redirect if we're not loading and definitely not authenticated
+    if (!authLoading && !authenticated && !user) {
+      router.push('/login')
     }
-  }, [authLoading, authenticated])
+  }, [authLoading, authenticated, user, router])
 
   // Set organization ID when user data becomes available
   useEffect(() => {
@@ -121,10 +107,6 @@ export default function Dashboard() {
       setCurrentOrganizationId(user.primaryOrganization?.id || user?.organizations?.[0]?.id)
     }
   }, [user])
-
-
-
-
 
   // Fetch dashboard data
   useEffect(() => {
@@ -165,21 +147,6 @@ export default function Dashboard() {
       fetchDashboardData()
     }
   }, [currentOrganizationId])
-
-  // Handle organization change
-  const handleOrganizationChange = (organizationId: string) => {
-    setCurrentOrganizationId(organizationId)
-    // Clear current data to show loading state
-    setStats(null)
-    setPatients([])
-  }
-
-  // Filter patients based on search term
-  const filteredPatients = patients.filter(patient =>
-    `${patient.firstName} ${patient.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.primaryDiagnosis.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.city.toLowerCase().includes(searchTerm.toLowerCase())
-  )
 
   // Particle effect
   useEffect(() => {
@@ -264,215 +231,217 @@ export default function Dashboard() {
     }
   }, [])
 
-  // Toggle theme
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
+
+
+  // Handle organization change
+  const handleOrganizationChange = (organizationId: string) => {
+    setCurrentOrganizationId(organizationId)
   }
 
-  // Don't render dashboard if not authenticated
-  if (!authenticated) {
-    return null
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-white">Loading authentication...</div>
+      </div>
+    )
   }
 
   return (
-      <div
-      className={`${theme} min-h-screen bg-gradient-to-br from-black via-slate-900 to-slate-800 text-slate-100 relative overflow-hidden`}
-    >
-      {/* Interactive Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Animated gradient orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
-        
-        {/* Floating geometric shapes */}
-        <div className="absolute top-1/3 right-1/3 w-4 h-4 bg-cyan-400/30 rounded-full animate-bounce" style={{animationDelay: '0.5s'}}></div>
-        <div className="absolute top-2/3 left-1/4 w-3 h-3 bg-blue-400/30 rounded-full animate-bounce" style={{animationDelay: '1.5s'}}></div>
-        <div className="absolute top-1/2 right-1/2 w-2 h-2 bg-purple-400/30 rounded-full animate-bounce" style={{animationDelay: '2.5s'}}></div>
-        
-        {/* Animated grid pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(56, 189, 248, 0.3) 1px, transparent 0)`,
-            backgroundSize: '50px 50px'
-          }}></div>
-            </div>
-
-        {/* Moving light rays */}
-        <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-cyan-500/20 to-transparent animate-pulse"></div>
-        <div className="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-transparent via-blue-500/20 to-transparent animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute top-0 left-2/3 w-px h-full bg-gradient-to-b from-transparent via-purple-500/20 to-transparent animate-pulse" style={{animationDelay: '2s'}}></div>
-              </div>
-
-      {/* Background particle effect */}
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-20" />
-
-      {/* Loading overlay */}
-      {isLoading && (
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-900 to-slate-800 z-50">
-          <DashboardSkeleton />
-              </div>
-      )}
-
-      <div className="relative z-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <DashboardNavbar 
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
         theme={theme}
         onThemeToggle={toggleTheme}
-        organizationName={user?.organizationId ? "Exponential Healthcare Solutions" : undefined}
-        currentOrganizationId={currentOrganizationId}
-        onOrganizationChange={handleOrganizationChange}
+        user={user}
+      />
+      
+      {/* Particle Canvas Background */}
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 w-full h-full pointer-events-none opacity-30"
+        style={{ zIndex: -1 }}
       />
 
-        {/* Main Content */}
-        <div className="container mx-auto p-4">
-          {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-12 gap-6">
-            {/* Main Content Area */}
-            <div className="col-span-12 lg:col-span-8">
-              <div className="grid gap-6">
-                {/* Key Metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <MetricCard
-                    title="Total Patients"
-                    value={stats?.totalPatients || 0}
-                    icon={Users}
-                    trend="up"
-                    color="cyan"
-                    detail="Active in system"
-                  />
-                  <MetricCard
-                    title="Active Referrals"
-                    value={stats?.activeReferrals || 0}
-                    icon={FileText}
-                    trend="stable"
-                    color="green"
-                    detail="Last 30 days"
-                  />
-                  <MetricCard
-                    title="Total Services"
-                    value={stats?.totalServices || 0}
-                    icon={Database}
-                    trend="up"
-                    color="purple"
-                    detail="Available services"
-                  />
-                </div>
-
-                {/* Recent Referrals */}
-                <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-cyan-500/10">
-                  <CardHeader className="border-b border-slate-700/50 pb-3 group-hover:border-slate-600/50 transition-colors duration-300">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-slate-100 flex items-center group-hover:text-cyan-100 transition-colors duration-300">
-                        <FileText className="mr-2 h-5 w-5 text-cyan-500 group-hover:scale-110 transition-transform duration-300" />
-                        Recent Referrals
-                      </CardTitle>
-                      <Button variant="outline" size="sm" className="border-slate-700/50 text-slate-400 hover:text-slate-100 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all duration-300">
-                        View All
-                      </Button>
-                    </div>
-                    </CardHeader>
-                  <CardContent className="p-6">
-                      <div className="space-y-4">
-                      {stats?.recentReferrals.map((referral) => (
-                        <ReferralItem key={referral.id} referral={referral} />
-                      ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                {/* Service Distribution */}
-                <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-green-500/10">
-                  <CardHeader className="border-b border-slate-700/50 pb-3 group-hover:border-slate-600/50 transition-colors duration-300">
-                    <CardTitle className="text-slate-100 flex items-center group-hover:text-green-100 transition-colors duration-300">
-                      <PieChart className="mr-2 h-5 w-5 text-green-500 group-hover:scale-110 transition-transform duration-300" />
-                      Service Utilization
-                      </CardTitle>
-                    </CardHeader>
-                  <CardContent className="p-6">
-                      <div className="space-y-3">
-                      {stats?.serviceDistribution.map((service, index) => (
-                        <ServiceUtilizationItem key={index} service={service} />
-                      ))}
-                      </div>
-                    </CardContent>
-                </Card>
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-2">Dashboard</h1>
+              <p className="text-slate-300 text-lg">
+                Welcome back, {user?.name || 'User'}
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Search patients..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-64 bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder:text-slate-400 focus:border-cyan-500/50"
+                />
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Right Sidebar */}
-            <div className="col-span-12 lg:col-span-4">
-              <div className="grid gap-6">
-                {/* Quick Actions */}
-                <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-slate-100 text-base">Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-3">
-                      <ActionButton icon={UserPlus} label="Add Patient" />
-                      <ActionButton icon={FileText} label="New Referral" />
-                      <ActionButton icon={Download} label="Export Data" />
-                      <ActionButton icon={BarChart3} label="Reports" />
-                    </div>
-                  </CardContent>
-                </Card>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left Column */}
+          <div className="col-span-12 lg:col-span-8">
+            <div className="grid gap-6">
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <MetricCard
+                  title="Total Patients"
+                  value={stats?.totalPatients || 0}
+                  icon={Users}
+                  trend="up"
+                  color="cyan"
+                  detail="Active in system"
+                />
+                <MetricCard
+                  title="Active Referrals"
+                  value={stats?.activeReferrals || 0}
+                  icon={FileText}
+                  trend="stable"
+                  color="green"
+                  detail="Last 30 days"
+                />
+                <MetricCard
+                  title="Total Services"
+                  value={stats?.totalServices || 0}
+                  icon={Database}
+                  trend="up"
+                  color="purple"
+                  detail="Available services"
+                />
+              </div>
 
-                {/* Patient Search Results */}
-                <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-slate-100 text-base">Newest Patients</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {filteredPatients.slice(0, 5).map((patient) => (
-                        <PatientSearchResult key={patient.id} patient={patient} />
-                      ))}
-                      {filteredPatients.length === 0 && searchTerm && (
-                        <div className="text-sm text-slate-500 text-center py-4">
-                          No patients found matching "{searchTerm}"
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-                        </div>
+              {/* Recent Referrals */}
+              <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-cyan-500/10">
+                <CardHeader className="border-b border-slate-700/50 pb-3 group-hover:border-slate-600/50 transition-colors duration-300">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-slate-100 flex items-center group-hover:text-cyan-100 transition-colors duration-300">
+                      <FileText className="mr-2 h-5 w-5 text-cyan-500 group-hover:scale-110 transition-transform duration-300" />
+                      Recent Referrals
+                    </CardTitle>
+                    <Button variant="outline" size="sm" className="border-slate-700/50 text-slate-400 hover:text-slate-100 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all duration-300">
+                      View All
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    {stats?.recentReferrals?.map((referral) => (
+                      <ReferralItem key={referral.id} referral={referral} />
+                    )) || (
+                      <div className="text-sm text-slate-500 text-center py-4">
+                        No recent referrals
                       </div>
-                        </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Service Distribution */}
+              <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-900/70 hover:border-slate-600/50 transition-all duration-300 group hover:shadow-2xl hover:shadow-green-500/10">
+                <CardHeader className="border-b border-slate-700/50 pb-3 group-hover:border-slate-600/50 transition-colors duration-300">
+                  <CardTitle className="text-slate-100 flex items-center group-hover:text-green-100 transition-colors duration-300">
+                    <PieChart className="mr-2 h-5 w-5 text-green-500 group-hover:scale-110 transition-transform duration-300" />
+                    Service Utilization
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-3">
+                    {stats?.serviceDistribution?.map((service, index) => (
+                      <ServiceUtilizationItem key={index} service={service} />
+                    )) || (
+                      <div className="text-sm text-slate-500 text-center py-4">
+                        No service data available
                       </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="col-span-12 lg:col-span-4">
+            <div className="grid gap-6">
+              {/* Quick Actions */}
+              <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-slate-100 text-base">Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    <ActionButton icon={UserPlus} label="Add Patient" />
+                    <ActionButton icon={FileText} label="New Referral" />
+                    <ActionButton icon={Download} label="Export Data" />
+                    <ActionButton icon={BarChart3} label="Reports" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Patient Search Results */}
+              <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-slate-100 text-base">Newest Patients</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {filteredPatients.slice(0, 5).map((patient) => (
+                      <PatientSearchResult key={patient.id} patient={patient} />
+                    ))}
+                    {filteredPatients.length === 0 && searchTerm && (
+                      <div className="text-sm text-slate-500 text-center py-4">
+                        No patients found matching "{searchTerm}"
+                      </div>
+                    )}
+                    {filteredPatients.length === 0 && !searchTerm && (
+                      <div className="text-sm text-slate-500 text-center py-4">
+                        No patients available
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
+    </div>
   )
 }
 
-
-
 // Component for quick stats
-function QuickStat({ label, value, icon: Icon }: { label: string; value: number; icon: LucideIcon }) {
+function QuickStat({ label, value, icon: Icon }: { label: string; value: number; icon: any }) {
   return (
     <div className="flex items-center justify-between p-4 rounded-lg bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm hover:bg-slate-800/70 hover:border-slate-600/50 hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300 group cursor-pointer">
       <div className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors duration-300">{label}</div>
       <div className="flex items-center space-x-2">
-        <Icon className="h-4 w-4 text-slate-400 group-hover:text-cyan-400 group-hover:scale-110 transition-all duration-300" />
-        <span className="text-lg font-semibold text-slate-200 group-hover:text-cyan-100 transition-colors duration-300">{value}</span>
-        </div>
+        <Icon className="h-4 w-4 text-slate-400 group-hover:text-cyan-400 group-hover:scale-110 transition-transform duration-300" />
+        <span className="text-lg font-semibold text-slate-200 group-hover:text-cyan-100 transition-all duration-300">{value}</span>
       </div>
+    </div>
   )
 }
 
 // Component for metric cards
 function MetricCard({
-                      title,
-                      value,
-                      icon: Icon,
-                      trend,
-                      color,
-                      detail,
-                    }: {
+  title,
+  value,
+  icon: Icon,
+  trend,
+  color,
+  detail,
+}: {
   title: string
   value: number
-  icon: LucideIcon
+  icon: any
   trend: "up" | "down" | "stable"
   color: string
   detail: string
@@ -488,42 +457,40 @@ function MetricCard({
       case "purple":
         return "from-purple-500 to-pink-500 border-purple-500/30"
       default:
-        return "from-cyan-500 to-blue-500 border-cyan-500/30"
+        return "from-slate-500 to-slate-600 border-slate-500/30"
     }
   }
 
   const getTrendIcon = () => {
     switch (trend) {
       case "up":
-        return <TrendingUp className="h-4 w-4 text-amber-500" />
+        return <Activity className="h-4 w-4 text-green-400" />
       case "down":
-        return <TrendingUp className="h-4 w-4 rotate-180 text-green-500" />
-      case "stable":
-        return <LineChart className="h-4 w-4 text-blue-500" />
+        return <Activity className="h-4 w-4 text-red-400 rotate-180" />
       default:
-        return null
+        return <Activity className="h-4 w-4 text-slate-400" />
     }
   }
 
   return (
-    <div className={`dashboard-metric-card border ${getColor()} hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/20 transition-all duration-300 group cursor-pointer`}>
-        <div className="flex items-center justify-between mb-2">
+    <div className="relative p-4 rounded-xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700/50 backdrop-blur-sm hover:from-slate-800/70 hover:to-slate-900/70 hover:border-slate-600/50 hover:shadow-xl hover:shadow-cyan-500/10 transition-all duration-300 group cursor-pointer overflow-hidden">
+      <div className="flex items-center justify-between mb-2">
         <div className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors duration-300">{title}</div>
         <Icon className={`h-5 w-5 text-${color}-500 group-hover:scale-110 transition-transform duration-300`} />
-        </div>
+      </div>
       <div className="text-2xl font-bold mb-1 bg-gradient-to-r bg-clip-text text-transparent from-slate-100 to-slate-300 group-hover:from-cyan-100 group-hover:to-cyan-300 transition-all duration-300">
         {value}
-        </div>
+      </div>
       <div className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors duration-300">{detail}</div>
       <div className="absolute bottom-2 right-2 flex items-center group-hover:scale-110 transition-transform duration-300">{getTrendIcon()}</div>
       <div className="absolute -bottom-6 -right-6 h-16 w-16 rounded-full bg-gradient-to-r opacity-20 blur-xl from-cyan-500 to-blue-500 group-hover:opacity-30 transition-opacity duration-300"></div>
-      </div>
+    </div>
   )
 }
 
 // Component for referral items
 function ReferralItem({ referral }: { referral: DashboardStats['recentReferrals'][0] }) {
-    return (
+  return (
     <div className="flex items-center justify-between p-3 rounded-lg border border-slate-700/50 hover:bg-slate-800/70 hover:border-slate-600/50 hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300 group cursor-pointer">
       <div className="flex items-center space-x-3">
         <Avatar className="h-10 w-10 group-hover:scale-110 transition-transform duration-300">
@@ -536,7 +503,7 @@ function ReferralItem({ referral }: { referral: DashboardStats['recentReferrals'
           <div className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors duration-300">{referral.primaryDiagnosis}</div>
           <div className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors duration-300">
             NTA Score: {referral.ntaScore} • {formatDate(referral.createdAt)}
-            </div>
+          </div>
         </div>
       </div>
       <div className="text-right">
@@ -545,9 +512,9 @@ function ReferralItem({ referral }: { referral: DashboardStats['recentReferrals'
         </div>
         <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30 text-xs group-hover:bg-green-500/20 group-hover:border-green-400/50 transition-all duration-300">
           Active
-          </Badge>
-        </div>
+        </Badge>
       </div>
+    </div>
   )
 }
 
@@ -564,13 +531,13 @@ function ServiceUtilizationItem({ service }: { service: { service: string; count
           ></div>
         </div>
         <span className="text-sm font-medium text-slate-200 group-hover:text-cyan-100 transition-colors duration-300">{service.count}</span>
-        </div>
       </div>
+    </div>
   )
 }
 
 // Component for action buttons
-function ActionButton({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
+function ActionButton({ icon: Icon, label }: { icon: any; label: string }) {
   return (
     <Button
       variant="outline"
@@ -586,23 +553,23 @@ function ActionButton({ icon: Icon, label }: { icon: LucideIcon; label: string }
 function PatientSearchResult({ patient }: { patient: Patient }) {
   return (
     <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-800/50 cursor-pointer hover:scale-105 transition-transform duration-200">
-        <Avatar className="h-8 w-8">
+      <Avatar className="h-8 w-8">
         <AvatarFallback className="bg-slate-700 text-cyan-500 text-xs">
           {patient.firstName[0]}{patient.lastName[0]}
         </AvatarFallback>
-        </Avatar>
+      </Avatar>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium text-slate-200 truncate">
           {patient.firstName} {patient.lastName}
-          </div>
+        </div>
         <div className="text-xs text-slate-400 truncate">
           {patient.age} yrs • {patient.city}, {patient.state}
         </div>
-            </div>
+      </div>
       <Badge variant="outline" className="bg-slate-800/50 text-slate-300 border-slate-600/50 text-xs">
         {patient.ntaScore}
       </Badge>
-      </div>
+    </div>
   )
 }
 

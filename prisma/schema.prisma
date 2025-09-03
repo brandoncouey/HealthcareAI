@@ -13,11 +13,19 @@ model User {
   name           String
   phone          String?       @unique
   password       String
+  role           UserRole      @default(MEMBER)
   settings       Json?         // Store user preferences as JSON
   sessions       Session[]
   userOrganizations UserOrganization[]
+  sentInvitations OrganizationInvitation[] @relation("InvitedByUser")
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+}
+
+enum UserRole {
+  SUPERADMIN    // Exponential.ai team members - can create organizations
+  ADMIN         // Organization admins - can invite users and manage org
+  MEMBER        // Regular users - basic access
 }
 
 model Session {
@@ -35,7 +43,7 @@ model UserOrganization {
   id             String        @id @default(uuid())
   userId         String
   organizationId String
-  role           String        @default("member") // admin, member, viewer
+  role           OrganizationRole @default(MEMBER)
   isActive       Boolean       @default(true)
   joinedAt       DateTime      @default(now())
   
@@ -45,6 +53,13 @@ model UserOrganization {
   @@unique([userId, organizationId])
   @@index([userId])
   @@index([organizationId])
+}
+
+enum OrganizationRole {
+  OWNER         // Organization owner (highest level)
+  ADMIN         // Organization admin (can invite users, manage org)
+  MEMBER        // Regular member
+  VIEWER        // Read-only access
 }
 
 model Organization {
@@ -59,9 +74,39 @@ model Organization {
   website  String?
   
   userOrganizations UserOrganization[]
+  invitations OrganizationInvitation[]
   patients Patient[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model OrganizationInvitation {
+  id             String        @id @default(uuid())
+  organizationId String
+  email          String
+  role           OrganizationRole @default(MEMBER)
+  status         InvitationStatus @default(PENDING)
+  invitedBy      String        // User ID who sent the invitation
+  expiresAt      DateTime      @default(dbgenerated("(NOW() + INTERVAL '7 days')"))
+  acceptedAt     DateTime?
+  
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedByUser  User          @relation("InvitedByUser", fields: [invitedBy], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([email])
+  @@index([status])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
 }
 
 model Patient {

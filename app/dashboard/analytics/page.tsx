@@ -84,6 +84,11 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(false)
   const [timeRange, setTimeRange] = useState('30d')
   const [currentOrganizationId, setCurrentOrganizationId] = useState<string | undefined>(undefined)
+  const [theme, setTheme] = useState<"dark" | "light">("dark")
+  
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark")
+  }
 
   // Set organization ID when user data becomes available
   useEffect(() => {
@@ -140,10 +145,11 @@ export default function AnalyticsPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 text-slate-100 relative overflow-hidden">
         <DashboardNavbar 
+          user={user}
           searchTerm=""
           onSearchChange={() => {}}
-          theme="dark"
-          onThemeToggle={() => {}}
+          theme={theme}
+          onThemeToggle={toggleTheme}
           currentOrganizationId={currentOrganizationId}
           onOrganizationChange={handleOrganizationChange}
         />
@@ -159,11 +165,12 @@ export default function AnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 text-slate-100 relative overflow-hidden">
-      <DashboardNavbar 
+                    <DashboardNavbar 
+        user={user}
         searchTerm=""
         onSearchChange={() => {}}
-        theme="dark"
-        onThemeToggle={() => {}}
+        theme={theme}
+        onThemeToggle={toggleTheme}
         currentOrganizationId={currentOrganizationId}
         onOrganizationChange={handleOrganizationChange}
       />

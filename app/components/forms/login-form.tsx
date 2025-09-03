@@ -7,6 +7,8 @@ import {
     CheckCircleIcon,
     ChevronDownIcon,
     KeyIcon,
+    EyeIcon,
+    EyeSlashIcon,
 } from '@heroicons/react/24/outline';
 import {ArrowRightIcon} from '@heroicons/react/20/solid';
 import {useRouter, useSearchParams} from 'next/navigation';
@@ -42,6 +44,8 @@ const countryCodes = [
 export default function LoginForm() {
     const { login, authenticated, loading } = useAuth();
     const [formData, setFormData] = useState({email: '', phone: '', password: '',});
+    
+
 
     // Navigation
     const router = useRouter();
@@ -55,6 +59,7 @@ export default function LoginForm() {
 
     const [showUsernameField, setShowUsernameField] = useState(true);
     const [showPasswordField, setShowPasswordField] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,9 +123,15 @@ export default function LoginForm() {
             });
 
             if (result.success) {
-                // Redirect to dashboard or handle successful login
+                // Force a redirect after successful login
                 const redirectTo = searchParams.get('redirect') || '/dashboard';
-                router.push(redirectTo);
+                try {
+                    router.push(redirectTo);
+                } catch (error) {
+                    console.error('Router.push() error:', error);
+                    // Fallback to window.location
+                    window.location.href = redirectTo;
+                }
             } else {
                 setError(result.error || 'Invalid credentials');
             }
@@ -131,13 +142,7 @@ export default function LoginForm() {
         }
     };
 
-    // Redirect if already authenticated
-    useEffect(() => {
-        if (authenticated && !loading) {
-            const redirectTo = searchParams.get('redirect') || '/dashboard';
-            router.push(redirectTo);
-        }
-    }, [authenticated, loading, router, searchParams]);
+
 
     /**
      * Handle passkey authentication
@@ -339,28 +344,40 @@ export default function LoginForm() {
             {/* Second Form - Password */}
             {showPasswordField && (
                 <form onSubmit={handlePasswordSubmit} className="space-y-6">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-3" htmlFor="password">
-                            Password
-                        </label>
-                        <div className="relative">
+                                         <div>
+                         <label className="block text-sm font-medium text-slate-300 mb-3" htmlFor="password">
+                             Password
+                         </label>
+                         <div className="relative" style={{ height: '64px' }}>
                             <input
-                                className="form-input w-full px-4 py-4 pl-12 pr-12 bg-slate-800/60 border border-slate-600/50 rounded-xl focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2] text-slate-100 placeholder:text-slate-500 transition-all duration-200"
-                                id="password" type="password" name="password" placeholder="Enter your password" required disabled={isSubmitting}
+                                className="form-input w-full h-16 px-4 py-4 pl-12 pr-16 bg-slate-800/60 border border-slate-600/50 rounded-xl focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2] text-slate-100 placeholder:text-slate-500 transition-all duration-200"
+                                id="password" type={showPassword ? "text" : "password"} name="password" placeholder="Enter your password" required disabled={isSubmitting}
                                 onChange={(e) => handleInputChange('password', e.target.value)}
                                 value={formData.password}
+                                style={{ minHeight: '64px', maxHeight: '64px' }}
                             />
                             <KeyIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500 peer-focus:text-[#00B5E2]"/>
+                            
+                            {/* Password visibility indicator */}
+                            {showPassword && (
+                                <p className="text-xs text-[#00B5E2] mt-1">• Password is visible</p>
+                            )}
 
                             {/* Show/Hide Password Button */}
                             <button type="button"
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors duration-200"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors duration-200 z-10"
                                 aria-label="Toggle password visibility"
+                                onClick={() => {
+                                    const newValue = !showPassword;
+                                    setShowPassword(newValue);
+                                }}
+                                title={showPassword ? "Hide password" : "Show password"}
                             >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
+                                {showPassword ? (
+                                    <EyeSlashIcon className="w-5 h-5" />
+                                ) : (
+                                    <EyeIcon className="w-5 h-5" />
+                                )}
                             </button>
                         </div>
                     </div>

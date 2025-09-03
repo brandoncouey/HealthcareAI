@@ -1,6 +1,5 @@
 import { Play } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
-import Image from 'next/image';
 import ScrollToDemoButton from '@/app/components/home/scroll-to-demo-button';
 
 export default function HeroSection() {
@@ -48,13 +47,7 @@ export default function HeroSection() {
                 className="aspect-video bg-gradient-to-br from-slate-800 to-black rounded-lg flex items-center justify-center border border-slate-700/30 relative overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300"
                 id="dashboard-preview-btn"
               >
-                <Image
-                  src="/dashboard-preview.png"
-                  alt="Watch Promo"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover rounded-lg"
-                />
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-700 to-slate-900 rounded-lg"></div>
                 <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center hover:bg-black/50 transition-colors duration-300">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-[#00B5E2] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg hover:bg-[#00B5E2]/80 transition-colors duration-300">

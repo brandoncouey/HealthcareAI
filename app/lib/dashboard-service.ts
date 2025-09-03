@@ -45,26 +45,8 @@ export async function getDashboardStats(organizationId?: string): Promise<Dashbo
           patient: { organizationId }
         } : {}
       }),
-      // Services used by this organization's referrals
-      organizationId ? 
-        prisma.referralService.count({
-          where: {
-            referral: {
-              patient: { organizationId }
-            }
-          }
-        }) : 
-        prisma.service.count(), // Global count if no organization
-      // Payers used by this organization's referrals  
-      organizationId ? 
-        prisma.referralCoverage.count({
-          where: {
-            referral: {
-              patient: { organizationId }
-            }
-          }
-        }) : 
-        prisma.payer.count(), // Global count if no organization
+      prisma.service.count(), // Global count of available services
+      prisma.payer.count(), // Global count of available payers
     ])
 
     // Get active referrals (created in last 30 days)
@@ -91,33 +73,91 @@ export async function getDashboardStats(organizationId?: string): Promise<Dashbo
       } : {},
       include: {
         patient: true,
+        services: {
+          include: {
+            service: true
+          }
+        }
       },
     })
 
-    // Get service distribution with actual service names
+    // Transform recent referrals to match expected format
+    const transformedReferrals = recentReferrals.map(referral => ({
+      id: referral.id,
+      patientName: `${referral.patient.firstName} ${referral.patient.lastName}`,
+      primaryDiagnosis: referral.primaryDxText || 'Not specified',
+      ntaScore: referral.ntaScore || 'Not specified',
+      createdAt: referral.createdAt,
+      services: referral.services.map(rs => ({
+        label: rs.service.name,
+        present: rs.status === 'approved' || rs.status === 'completed'
+      }))
+    }))
+
+    // Get service distribution
     const serviceDistribution = await prisma.referralService.groupBy({
       by: ['serviceId'],
       _count: {
-        serviceId: true,
+        serviceId: true
       },
       where: organizationId ? {
         referral: {
           patient: { organizationId }
         }
       } : {},
+      orderBy: {
+        _count: {
+          serviceId: 'desc'
+        }
+      },
+      take: 5
     })
 
-    // Get payer distribution with actual payer names
+    // Get service names for distribution
+    const serviceIds = serviceDistribution.map(s => s.serviceId)
+    const services = await prisma.service.findMany({
+      where: { id: { in: serviceIds } }
+    })
+
+    const serviceDistributionWithNames = serviceDistribution.map(s => {
+      const service = services.find(serv => serv.id === s.serviceId)
+      return {
+        service: service?.name || 'Unknown Service',
+        count: s._count.serviceId
+      }
+    })
+
+    // Get payer distribution
     const payerDistribution = await prisma.referralCoverage.groupBy({
       by: ['payerId'],
       _count: {
-        payerId: true,
+        payerId: true
       },
       where: organizationId ? {
         referral: {
           patient: { organizationId }
         }
       } : {},
+      orderBy: {
+        _count: {
+          payerId: 'desc'
+        }
+      },
+      take: 5
+    })
+
+    // Get payer names for distribution
+    const payerIds = payerDistribution.map(p => p.payerId)
+    const payers = await prisma.payer.findMany({
+      where: { id: { in: payerIds } }
+    })
+
+    const payerDistributionWithNames = payerDistribution.map(p => {
+      const payer = payers.find(pay => pay.id === p.payerId)
+      return {
+        payer: payer?.name || 'Unknown Payer',
+        count: p._count.payerId
+      }
     })
 
     // Get referral trends (last 6 months)
@@ -127,36 +167,32 @@ export async function getDashboardStats(organizationId?: string): Promise<Dashbo
     const referralTrends = await prisma.referral.groupBy({
       by: ['createdAt'],
       _count: {
-        id: true,
+        id: true
       },
       where: {
         createdAt: {
-          gte: sixMonthsAgo,
+          gte: sixMonthsAgo
         },
         ...(organizationId && {
           patient: { organizationId }
         })
       },
       orderBy: {
-        createdAt: 'asc',
-      },
+        createdAt: 'asc'
+      }
     })
 
-    // Get actual service names for distribution
-    const serviceNames = await prisma.service.findMany({
-      where: {
-        id: { in: serviceDistribution.map(sd => sd.serviceId) }
-      },
-      select: { id: true, name: true }
-    })
-
-    // Get actual payer names for distribution
-    const payerNames = await prisma.payer.findMany({
-      where: {
-        id: { in: payerDistribution.map(pd => pd.payerId) }
-      },
-      select: { id: true, name: true }
-    })
+    // Transform trends to monthly format
+    const monthlyTrends = referralTrends.reduce((acc, trend) => {
+      const month = trend.createdAt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+      const existing = acc.find(t => t.month === month)
+      if (existing) {
+        existing.count += trend._count.id
+      } else {
+        acc.push({ month, count: trend._count.id })
+      }
+      return acc
+    }, [] as Array<{ month: string; count: number }>)
 
     return {
       totalPatients,
@@ -164,201 +200,131 @@ export async function getDashboardStats(organizationId?: string): Promise<Dashbo
       activeReferrals,
       totalServices,
       totalPayers,
-      recentReferrals: recentReferrals.map(ref => ({
-        id: ref.id,
-        patientName: `${ref.patient.firstName} ${ref.patient.lastName}`,
-        primaryDiagnosis: ref.primaryDxText || 'Not specified',
-        ntaScore: ref.ntaScore || 'Not specified',
-        createdAt: ref.createdAt,
-        services: [],
-      })),
-      serviceDistribution: serviceDistribution.map(sd => {
-        const service = serviceNames.find(s => s.id === sd.serviceId)
-        return {
-          service: service?.name || `Service ${sd.serviceId}`,
-          count: sd._count.serviceId,
-        }
-      }),
-      payerDistribution: payerDistribution.map(pd => {
-        const payer = payerNames.find(p => p.id === pd.payerId)
-        return {
-          payer: payer?.name || `Payer ${pd.payerId}`,
-          count: pd._count.payerId,
-        }
-      }),
-      referralTrends: referralTrends.map(rt => ({
-        month: rt.createdAt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-        count: rt._count.id,
-      })),
+      recentReferrals: transformedReferrals,
+      serviceDistribution: serviceDistributionWithNames,
+      payerDistribution: payerDistributionWithNames,
+      referralTrends: monthlyTrends
     }
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error)
-    throw new Error('Failed to fetch dashboard statistics')
+    console.error('Error in getDashboardStats:', error)
+    throw error
   }
 }
 
-export async function getPatientOverview(patientId: string): Promise<PatientOverview | null> {
-  try {
-    const patient = await prisma.patient.findUnique({
-      where: { id: patientId },
-      include: {
-        referrals: {
-          include: {
-            referralServices: {
-              include: {
-                service: true,
-              },
-            },
-            referralDisciplines: {
-              include: {
-                discipline: true,
-              },
-            },
-            referralMedications: {
-              include: {
-                medication: true,
-              },
-            },
-            referralDiagnoses: {
-              where: { isPrimary: true },
-              include: {
-                diagnosis: true,
-              },
-            },
-          },
-        },
-        contacts: {
-          take: 1,
-        },
-      },
-    })
-
-    if (!patient) return null
-
-    const referral = patient.referrals[0] // Get the most recent referral
-    if (!referral) return null
-
-    // Calculate age
-    const age = patient.dob ? Math.floor((Date.now() - patient.dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : 0
-
-    return {
-      id: patient.id,
-      firstName: patient.firstName,
-      lastName: patient.lastName,
-      age,
-      primaryDiagnosis: referral.primaryDxText || 'Not specified',
-      ntaScore: referral.ntaScore || 'Not specified',
-      services: referral.referralServices.map(rs => ({
-        label: rs.service.label,
-        present: rs.present || false,
-        notes: rs.notes || undefined,
-      })),
-      disciplines: referral.referralDisciplines.map(rd => ({
-        name: rd.discipline.name,
-      })),
-      medications: referral.referralMedications.map(rm => ({
-        name: rm.medication.name,
-        isHighCost: rm.isHighCost || false,
-      })),
-      emergencyContact: patient.contacts[0] ? {
-        name: patient.contacts[0].name,
-        phone: patient.contacts[0].phone || 'Not provided',
-        relation: patient.contacts[0].relation || 'Not specified',
-      } : {
-        name: 'Not provided',
-        phone: 'Not provided',
-        relation: 'Not specified',
-      },
-    }
-  } catch (error) {
-    console.error('Error fetching patient overview:', error)
-    throw new Error('Failed to fetch patient overview')
-  }
-}
-
-export async function getAllPatients(organizationId?: string) {
+export async function getPatients(organizationId?: string): Promise<PatientOverview[]> {
   try {
     const patients = await prisma.patient.findMany({
       where: organizationId ? { organizationId } : {},
-      orderBy: {
-        lastName: 'asc',
+      include: {
+        referrals: {
+          include: {
+            services: {
+              include: {
+                service: true
+              }
+            },
+            disciplines: {
+              include: {
+                discipline: true
+              }
+            },
+            medications: {
+              include: {
+                medication: true
+              }
+            },
+            coverages: {
+              include: {
+                payer: true
+              }
+            }
+          }
+        },
+        contacts: true
       },
+      orderBy: {
+        lastName: 'asc'
+      }
     })
 
-    return patients.map(patient => ({
-      id: patient.id,
-      firstName: patient.firstName,
-      lastName: patient.lastName,
-      age: patient.dob ? Math.floor((Date.now() - patient.dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : 0,
-      primaryDiagnosis: 'Not specified',
-      ntaScore: 'Not specified',
-      services: 'None',
-      emergencyContact: 'Not provided',
-      city: patient.city || 'Not specified',
-      state: patient.state || 'Not specified',
-    }))
+    return patients.map(patient => {
+      const latestReferral = patient.referrals[0] // Most recent referral
+      
+      return {
+        id: patient.id,
+        firstName: patient.firstName,
+        lastName: patient.lastName,
+        age: patient.age || 0,
+        primaryDiagnosis: latestReferral?.primaryDxText || 'Not specified',
+        ntaScore: latestReferral?.ntaScore || 'Not specified',
+        services: latestReferral?.services.map(rs => ({
+          label: rs.service.name,
+          present: rs.status === 'approved' || rs.status === 'completed',
+          notes: rs.status
+        })) || [],
+        disciplines: latestReferral?.disciplines.map(rd => ({
+          name: rd.discipline.name
+        })) || [],
+        medications: latestReferral?.medications.map(rm => ({
+          name: rm.medication.name,
+          isHighCost: false // Default value, could be enhanced with actual cost data
+        })) || [],
+        emergencyContact: {
+          name: patient.contacts[0]?.name || patient.emergencyContact || 'Not specified',
+          phone: patient.contacts[0]?.phone || patient.emergencyPhone || 'Not specified',
+          relation: patient.contacts[0]?.relation || 'Not specified'
+        }
+      }
+    })
   } catch (error) {
-    console.error('Error fetching all patients:', error)
-    throw new Error('Failed to fetch patients')
+    console.error('Error in getPatients:', error)
+    throw error
   }
 }
 
-export async function getReferralAnalytics() {
+export async function getReferrals(organizationId?: string) {
   try {
-    // Get referral counts by month for the last 12 months
-    const twelveMonthsAgo = new Date()
-    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)
-    
-    const monthlyReferrals = await prisma.referral.groupBy({
-      by: ['createdAt'],
-      _count: {
-        id: true,
-      },
-      where: {
-        createdAt: {
-          gte: twelveMonthsAgo,
+    const referrals = await prisma.referral.findMany({
+      where: organizationId ? {
+        patient: { organizationId }
+      } : {},
+      include: {
+        patient: true,
+        services: {
+          include: {
+            service: true
+          }
         },
+        disciplines: {
+          include: {
+            discipline: true
+          }
+        },
+        coverages: {
+          include: {
+            payer: true
+          }
+        }
       },
       orderBy: {
-        createdAt: 'asc',
-      },
+        createdAt: 'desc'
+      }
     })
 
-    // Get service utilization
-    const serviceUtilization = await prisma.referralService.groupBy({
-      by: ['serviceId'],
-      _count: {
-        id: true,
-      },
-      include: {
-        service: true,
-      },
-    })
-
-    // Get NTA score distribution
-    const ntaDistribution = await prisma.referral.groupBy({
-      by: ['ntaScore'],
-      _count: {
-        id: true,
-      },
-    })
-
-    return {
-      monthlyReferrals: monthlyReferrals.map(mr => ({
-        month: mr.createdAt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-        count: mr._count.id,
-      })),
-      serviceUtilization: serviceUtilization.map(su => ({
-        service: su.service.label,
-        count: su._count.id,
-      })),
-      ntaDistribution: ntaDistribution.map(nd => ({
-        score: nd.ntaScore || 'Not specified',
-        count: nd._count.id,
-      })),
-    }
+    return referrals.map(referral => ({
+      id: referral.id,
+      patientName: `${referral.patient.firstName} ${referral.patient.lastName}`,
+      patientId: referral.patientId,
+      primaryDiagnosis: referral.primaryDxText || 'Not specified',
+      ntaScore: referral.ntaScore || 'Not specified',
+      services: referral.services.map(rs => rs.service.name),
+      disciplines: referral.disciplines.map(rd => rd.discipline.name),
+      payers: referral.coverages.map(rc => rc.payer.name),
+      createdAt: referral.createdAt,
+      status: referral.completedAt ? 'Completed' : 'Active'
+    }))
   } catch (error) {
-    console.error('Error fetching referral analytics:', error)
-    throw new Error('Failed to fetch referral analytics')
+    console.error('Error in getReferrals:', error)
+    throw error
   }
 }

@@ -13,13 +13,15 @@ import {
   Settings,
   LogOut,
   User,
+  Shield,
   type LucideIcon,
 } from "lucide-react"
 
 import { Button } from "@/app/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/app/components/ui/tooltip"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/app/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/app/components/ui/dropdown-menu"
+import Link from "next/link"
 
 interface NavItemProps {
   icon: LucideIcon
@@ -88,6 +90,7 @@ interface DashboardNavbarProps {
 }
 
 export default function DashboardNavbar({ 
+  user,
   searchTerm, 
   onSearchChange, 
   theme, 
@@ -96,7 +99,7 @@ export default function DashboardNavbar({
   currentOrganizationId,
   onOrganizationChange
 }: DashboardNavbarProps) {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   
   return (
     <nav className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-slate-700/50 sticky top-0 z-40 shadow-lg backdrop-blur-sm relative overflow-hidden">
@@ -186,9 +189,9 @@ export default function DashboardNavbar({
             {/* User Avatar with Organization */}
             <div className="flex items-center space-x-3">
               {/* Organization Dropdown */}
-              {user?.organizations && user.organizations.length > 0 && (
-                <div className="hidden lg:block">
-                  <DropdownMenu>
+                              {user?.organizations && user.organizations.length > 0 && (
+                  <div className="hidden lg:block organization-dropdown">
+                                    <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <div className="relative group cursor-pointer">
                         <div className="absolute inset-0 bg-gradient-to-r from-slate-800/60 to-slate-700/60 rounded-xl blur-sm group-hover:blur-md transition-all duration-300"></div>
@@ -199,9 +202,9 @@ export default function DashboardNavbar({
                             </div>
                             <div className="min-w-0">
                               <div className="text-xs text-slate-400 font-medium tracking-wide uppercase">Organization</div>
-                                                          <div className="text-sm text-slate-200 font-semibold max-w-36 truncate leading-tight" title={currentOrganizationId ? user.organizations?.find(org => org.id === currentOrganizationId)?.name : user.primaryOrganization?.name || user.organizations?.[0]?.name}>
-                              {currentOrganizationId ? user.organizations?.find(org => org.id === currentOrganizationId)?.name : user.primaryOrganization?.name || user.organizations?.[0]?.name}
-                            </div>
+                              <div className="text-sm text-slate-200 font-semibold max-w-36 truncate leading-tight" title={currentOrganizationId ? user.organizations?.find(org => org.id === currentOrganizationId)?.name : user.primaryOrganization?.name || user.organizations?.[0]?.name}>
+                                {currentOrganizationId ? user.organizations?.find(org => org.id === currentOrganizationId)?.name : user.primaryOrganization?.name || user.organizations?.[0]?.name}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -241,7 +244,7 @@ export default function DashboardNavbar({
                 <DropdownMenuTrigger asChild>
                   <div className="relative group cursor-pointer">
                     <Avatar className="h-11 w-11 border-2 border-slate-600/50 group-hover:border-cyan-500/50 transition-all duration-300">
-                      <AvatarImage src="/placeholder.svg?height=40&width=40" alt="User" />
+                                              <AvatarImage alt="User" />
                       <AvatarFallback className="bg-gradient-to-br from-slate-700 to-slate-800 text-cyan-400 font-semibold text-lg">
                       {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'HC'}
                     </AvatarFallback>
@@ -249,21 +252,57 @@ export default function DashboardNavbar({
                     <div className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-slate-900/95 border-slate-700/50 mt-2 backdrop-blur-sm shadow-xl w-48">
-                  <DropdownMenuItem className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 rounded-lg mx-2 my-1">
-                    <User className="w-4 h-4 mr-3 text-slate-400 group-hover:text-cyan-400 transition-colors duration-200" />
-                    {user?.name || 'Account'}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => window.location.href = '/dashboard/settings'}
-                    className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 rounded-lg mx-2 my-1"
-                  >
-                    <Settings className="w-4 h-4 mr-3 text-slate-400 group-hover:text-cyan-400 transition-colors duration-200" />
-                    Settings
+                <DropdownMenuContent align="end" className="w-56 bg-slate-900/95 border-slate-700/50 backdrop-blur-sm shadow-xl">
+                  <DropdownMenuLabel className="font-normal p-4">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none text-slate-200">{user?.name}</p>
+                      <p className="text-xs leading-none text-slate-400">
+                        {user?.email}
+                      </p>
+                      <p className="text-xs leading-none text-slate-400">
+                        Global Role: {user?.role}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-700/50" />
+                  
+                  {/* ExponentialCP - Only for global SUPERADMIN/ADMIN roles */}
+                  {(user?.role === 'SUPERADMIN' || user?.role === 'ADMIN') && (
+                    <>
+                      <DropdownMenuItem asChild className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 mx-2 my-1 rounded-lg">
+                        <Link href="/dashboard/exponential-cp" className="flex items-center w-full">
+                          <Shield className="mr-2 h-4 w-4" />
+                          ExponentialCP
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-slate-700/50" />
+                    </>
+                  )}
+                  
+                  {/* Admin Panel - Only for organization ADMIN/OWNER roles */}
+                  {user?.organizations?.some(org => 
+                    org.role === 'ADMIN' || org.role === 'OWNER'
+                  ) && (
+                    <>
+                      <DropdownMenuItem asChild className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 mx-2 my-1 rounded-lg">
+                        <Link href="/dashboard/admin" className="flex items-center w-full">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin Panel
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-slate-700/50" />
+                    </>
+                  )}
+                  
+                  <DropdownMenuItem asChild className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 mx-2 my-1 rounded-lg">
+                    <Link href="/dashboard/settings" className="flex items-center w-full">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={logout}
-                    className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 rounded-lg mx-2 my-1 border-t border-slate-700/30"
+                    className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 mx-2 my-1 rounded-lg border-t border-slate-700/30"
                   >
                     <LogOut className="w-4 h-4 mr-3 text-slate-400 group-hover:text-cyan-400 transition-colors duration-200" />
                     Sign Out

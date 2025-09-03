@@ -287,7 +287,7 @@ export default function SettingsPage() {
                   <CardContent className="space-y-4">
                     <div className="flex items-center space-x-4">
                       <Avatar className="h-20 w-20 border-2 border-cyan-500/50">
-                        <AvatarImage src="/placeholder.svg?height=80&width=80" alt="Profile" />
+                        <AvatarImage alt="Profile" />
                         <AvatarFallback className="bg-gradient-to-br from-slate-700 to-slate-800 text-cyan-400 text-2xl font-semibold">
                           {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
                         </AvatarFallback>
@@ -403,12 +403,20 @@ export default function SettingsPage() {
                             placeholder="Enter your current password"
                             required
                           />
+                          {showCurrentPassword && (
+                            <p className="text-xs text-cyan-400 mt-1">• Password is visible</p>
+                          )}
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="absolute right-0 top-0 h-full px-3 hover:bg-slate-700/50"
-                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                            className="absolute right-0 top-0 h-full px-3 hover:bg-slate-700/50 text-slate-400 hover:text-slate-200"
+                            onClick={() => {
+                              const newValue = !showCurrentPassword;
+
+                              setShowCurrentPassword(newValue);
+                            }}
+                            title={showCurrentPassword ? "Hide password" : "Show password"}
                           >
                             {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </Button>
@@ -431,13 +439,21 @@ export default function SettingsPage() {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="absolute right-0 top-0 h-full px-3 hover:bg-slate-700/50"
-                            onClick={() => setShowNewPassword(!showNewPassword)}
+                            className="absolute right-0 top-0 h-full px-3 hover:bg-slate-700/50 text-slate-400 hover:text-slate-200"
+                            onClick={() => {
+                              const newValue = !showNewPassword;
+
+                              setShowNewPassword(newValue);
+                            }}
+                            title={showNewPassword ? "Hide password" : "Show password"}
                           >
                             {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </Button>
                         </div>
-                        <p className="text-xs text-slate-500 mt-1">Password must be at least 8 characters long</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Password must be at least 8 characters long
+                          {showNewPassword && <span className="text-cyan-400 ml-2">• Password is visible</span>}
+                        </p>
                       </div>
 
                       <div>
@@ -452,12 +468,20 @@ export default function SettingsPage() {
                             placeholder="Confirm your new password"
                             required
                           />
+                          {showConfirmPassword && (
+                            <p className="text-xs text-cyan-400 mt-1">• Password is visible</p>
+                          )}
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="absolute right-0 top-0 h-full px-3 hover:bg-slate-700/50"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-0 top-0 h-full px-3 hover:bg-slate-700/50 text-slate-400 hover:text-slate-200"
+                            onClick={() => {
+                              const newValue = !showConfirmPassword;
+
+                              setShowConfirmPassword(newValue);
+                            }}
+                            title={showConfirmPassword ? "Hide password" : "Show password"}
                           >
                             {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </Button>

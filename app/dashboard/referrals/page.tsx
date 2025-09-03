@@ -405,11 +405,12 @@ export default function ReferralsPage() {
       )}
 
       <DashboardNavbar 
+        user={user}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         theme={theme}
         onThemeToggle={toggleTheme}
-        organizationName={user?.organizationId ? "Exponential Healthcare Solutions" : undefined}
+        organizationName={user?.primaryOrganization?.name}
         currentOrganizationId={currentOrganizationId}
         onOrganizationChange={handleOrganizationChange}
       />

@@ -1,47 +1,48 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-// ===== Crypto functions using Web Crypto API (works in both Node.js and browsers) =====
-function hashToken(token: string): string {
-    // For middleware, we'll use a simple hash approach that doesn't require crypto
-    // This is just for basic validation - in production you might want more security
-    return btoa(token).slice(0, 32);
-}
+// Routes that require authentication
+const protectedRoutes = ['/dashboard', '/admin', '/exponential-cp', '/settings']
 
-export async function middleware(request: NextRequest) {
-    // Only apply to dashboard routes
-    if (request.nextUrl.pathname.startsWith('/dashboard')) {
-        try {
-            // Get the session cookie from the request
-            const sessionCookie = request.cookies.get("sb.session");
-            
-            if (!sessionCookie?.value) {
-                // Redirect to login if no session cookie
-                const loginUrl = new URL('/login', request.url);
-                loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
-                return NextResponse.redirect(loginUrl);
-            }
-            
-            // For now, just check if the cookie exists
-            // In a production app, you might want to validate the token against the database
-            // But for middleware, this basic check is sufficient
-            
-            // Continue to dashboard if cookie exists
-            return NextResponse.next();
-        } catch (error) {
-            console.error('Middleware session check error:', error);
-            // Redirect to login on error
-            const loginUrl = new URL('/login', request.url);
-            return NextResponse.redirect(loginUrl);
-        }
-    }
-    
-    // Allow all other routes
-    return NextResponse.next();
+// Routes that require specific global roles
+const superAdminRoutes = ['/exponential-cp']
+const adminRoutes = ['/exponential-cp']
+
+// Routes that require organization admin roles
+const organizationAdminRoutes = ['/admin']
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Check if the route requires authentication
+  const requiresAuth = protectedRoutes.some(route => pathname.startsWith(route))
+  
+  if (!requiresAuth) {
+    return NextResponse.next()
+  }
+
+  // Get the session token from cookies
+  const sessionToken = request.cookies.get('sb.session')?.value
+
+  if (!sessionToken) {
+    // Redirect to login if no session token
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  // For routes that require specific role checks, we'll let the page handle the authorization
+  // since we need to check both global roles and organization roles
+  return NextResponse.next()
 }
 
 export const config = {
-    matcher: [
-        '/dashboard/:path*',
-    ],
-};
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
+}

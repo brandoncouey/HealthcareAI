@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
             }
         })
 
-        console.log('Found referrals:', referrals.length)
+
 
         // Transform data to match frontend expectations
         const transformedReferrals = referrals.map((referral) => {

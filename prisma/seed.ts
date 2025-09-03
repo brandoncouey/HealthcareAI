@@ -1,378 +1,472 @@
-import { PrismaClient } from '@prisma/client'
-import bcryptjs from 'bcryptjs'
+import { PrismaClient, UserRole, OrganizationRole } from '@prisma/client'
+import { hash } from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
-// Generate realistic patient data
-function generatePatientData(organizationId: string, index: number) {
-  const firstNames = [
-    'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth',
-    'David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Christopher', 'Karen',
-    'Charles', 'Nancy', 'Daniel', 'Lisa', 'Matthew', 'Betty', 'Anthony', 'Helen', 'Mark', 'Sandra',
-    'Donald', 'Donna', 'Steven', 'Carol', 'Paul', 'Ruth', 'Andrew', 'Sharon', 'Joshua', 'Michelle',
-    'Kenneth', 'Laura', 'Kevin', 'Emily', 'Brian', 'Kimberly', 'George', 'Deborah', 'Edward', 'Dorothy',
-    'Ronald', 'Lisa', 'Timothy', 'Nancy', 'Jason', 'Karen', 'Jeffrey', 'Betty', 'Ryan', 'Helen',
-    'Jacob', 'Sandra', 'Gary', 'Donna', 'Nicholas', 'Carol', 'Eric', 'Ruth', 'Jonathan', 'Sharon',
-    'Stephen', 'Michelle', 'Larry', 'Emily', 'Justin', 'Kimberly', 'Scott', 'Deborah', 'Brandon', 'Dorothy',
-    'Benjamin', 'Lisa', 'Samuel', 'Nancy', 'Frank', 'Karen', 'Gregory', 'Betty', 'Raymond', 'Helen',
-    'Alexander', 'Sandra', 'Patrick', 'Donna', 'Jack', 'Carol', 'Dennis', 'Ruth', 'Jerry', 'Sharon'
-  ]
-  
-  const lastNames = [
-    'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez',
-    'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin',
-    'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson',
-    'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores',
-    'Green', 'Adams', 'Nelson', 'Baker', 'Hall', 'Rivera', 'Campbell', 'Mitchell', 'Carter', 'Roberts',
-    'Gomez', 'Phillips', 'Evans', 'Turner', 'Diaz', 'Parker', 'Cruz', 'Edwards', 'Collins', 'Reyes',
-    'Stewart', 'Morris', 'Morales', 'Murphy', 'Rogers', 'Reed', 'Cook', 'Bailey', 'Cooper', 'Richardson',
-    'Cox', 'Howard', 'Ward', 'Torres', 'Peterson', 'Gray', 'Ramirez', 'James', 'Watson', 'Brooks',
-    'Kelly', 'Sanders', 'Price', 'Bennett', 'Wood', 'Barnes', 'Ross', 'Henderson', 'Coleman', 'Jenkins',
-    'Perry', 'Powell', 'Long', 'Patterson', 'Hughes', 'Flores', 'Washington', 'Butler', 'Simmons', 'Foster'
-  ]
-
-  const cities = [
-    'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego',
-    'Dallas', 'San Jose', 'Austin', 'Jacksonville', 'Fort Worth', 'Columbus', 'Charlotte', 'San Francisco',
-    'Indianapolis', 'Seattle', 'Denver', 'Washington', 'Boston', 'El Paso', 'Nashville', 'Detroit',
-    'Oklahoma City', 'Portland', 'Las Vegas', 'Memphis', 'Louisville', 'Baltimore', 'Milwaukee'
-  ]
-
-  const states = [
-    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA',
-    'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT',
-    'VA', 'WA', 'WV', 'WI', 'WY'
-  ]
-
-  const diagnoses = [
-    'Type 2 Diabetes Mellitus', 'Essential Hypertension', 'Chronic Obstructive Pulmonary Disease',
-    'Congestive Heart Failure', 'Chronic Kidney Disease', 'Osteoarthritis', 'Depression',
-    'Anxiety Disorder', 'Asthma', 'Coronary Artery Disease', 'Atrial Fibrillation',
-    'Peripheral Vascular Disease', 'Dementia', 'Parkinson\'s Disease', 'Multiple Sclerosis',
-    'Rheumatoid Arthritis', 'Lupus', 'Fibromyalgia', 'Migraine', 'Epilepsy'
-  ]
-
-  const firstName = firstNames[Math.floor(Math.random() * firstNames.length)]
-  const lastName = lastNames[Math.floor(Math.random() * lastNames.length)]
-  const age = Math.floor(Math.random() * 50) + 50 // 50-100 years old
-  const city = cities[Math.floor(Math.random() * cities.length)]
-  const state = states[Math.floor(Math.random() * states.length)]
-  const postalCode = Math.floor(Math.random() * 90000) + 10000
-  const primaryDiagnosis = diagnoses[Math.floor(Math.random() * diagnoses.length)]
-  const medicalRecordNumber = `MRN${organizationId.slice(0, 8)}${index.toString().padStart(4, '0')}`
-
-  return {
-    firstName,
-    lastName,
-    age,
-    organizationId,
-    addressLine1: `${Math.floor(Math.random() * 9999) + 1} ${['Oak', 'Maple', 'Pine', 'Elm', 'Cedar'][Math.floor(Math.random() * 5)]} St`,
-    city,
-    state,
-    postalCode: postalCode.toString(),
-    phone: `+1-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`,
-    email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
-    dob: new Date(Date.now() - (age * 365 * 24 * 60 * 60 * 1000)),
-    sex: ['M', 'F'][Math.floor(Math.random() * 2)],
-    height: `${Math.floor(Math.random() * 2) + 5}'${Math.floor(Math.random() * 12)}"`,
-    weight: `${Math.floor(Math.random() * 100) + 100} lb`,
-    emergencyContact: `${['Spouse', 'Daughter', 'Son', 'Friend'][Math.floor(Math.random() * 4)]} Contact`,
-    emergencyPhone: `+1-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`,
-    medicalRecordNumber,
-    status: ['active', 'inactive', 'discharged'][Math.floor(Math.random() * 3)]
-  }
-}
-
 async function main() {
-  console.log('🌱 Starting database seeding...')
+  console.log('🌱 Starting comprehensive multi-organization database seed...')
 
-  // Clear existing data
-  console.log('🧹 Clearing existing data...')
-  await prisma.referralCoverage.deleteMany()
-  await prisma.referralDiagnosis.deleteMany()
-  await prisma.referralService.deleteMany()
-  await prisma.referral.deleteMany()
-  await prisma.patient.deleteMany()
-  await prisma.userOrganization.deleteMany()
-  await prisma.user.deleteMany()
-  await prisma.organization.deleteMany()
-  await prisma.service.deleteMany()
-  await prisma.diagnosis.deleteMany()
-  await prisma.payer.deleteMany()
-  await prisma.session.deleteMany()
-
-  // Create Organizations
-  console.log('🏢 Creating organizations...')
-  const createdOrgs = []
-  const orgNames = [
-    'Exponential Healthcare Solutions',
-    'Sunrise Medical Group',
-    'Mercy Health Partners',
-    'Advanced Care Network',
-    'Community Health Alliance'
+  // Create multiple users with different global roles
+  const users = [
+    {
+      email: 'admin@exponential.com',
+      name: 'Exponential AI Admin',
+      password: 'testing123',
+      globalRole: UserRole.SUPERADMIN  // Global role for admin panel access
+    },
+    {
+      email: 'dr.sarah@healthcare.org',
+      name: 'Dr. Sarah Martinez',
+      password: 'testing123',
+      globalRole: UserRole.ADMIN  // Global role for admin panel access
+    },
+    {
+      email: 'nurse.mike@healthcare.org',
+      name: 'Mike Johnson',
+      password: 'testing123',
+      globalRole: UserRole.ADMIN  // Global role for admin panel access
+    },
+    {
+      email: 'therapist.lisa@healthcare.org',
+      name: 'Lisa Thompson',
+      password: 'testing123',
+      globalRole: UserRole.MEMBER  // Global role - no admin panel access
+    }
   ]
 
-  for (const name of orgNames) {
-    const org = await prisma.organization.create({
-      data: {
-        name,
-        type: ['Hospital', 'Clinic', 'Home Health', 'Specialty Center', 'Multi-Specialty'][Math.floor(Math.random() * 5)],
-        address: `${Math.floor(Math.random() * 9999) + 1} ${['Medical', 'Health', 'Care', 'Wellness', 'Healing'][Math.floor(Math.random() * 5)]} Blvd`,
-        city: ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'][Math.floor(Math.random() * 5)],
-        state: ['NY', 'CA', 'IL', 'TX', 'AZ'][Math.floor(Math.random() * 5)],
-        zipCode: (Math.floor(Math.random() * 90000) + 10000).toString(),
-        phone: `+1-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`,
-        website: `https://www.${name.toLowerCase().replace(/\s+/g, '')}.com`
-      }
-    })
-    createdOrgs.push(org)
-    console.log(`✅ Created organization: ${org.name}`)
-  }
-
-  // Create Users
-  console.log('👥 Creating users...')
+  // Create users
   const createdUsers = []
-  const userEmails = [
-    'admin@exponential.com',
-    'doctor@sunrise.com',
-    'nurse@mercy.com',
-    'therapist@advanced.com',
-    'coordinator@community.com'
-  ]
-
-  for (let i = 0; i < userEmails.length; i++) {
-    const hashedPassword = await bcryptjs.hash('testing', 10)
-    const user = await prisma.user.create({
-      data: {
-        email: userEmails[i],
-        name: `${['Admin', 'Dr.', 'Nurse', 'Therapist', 'Coordinator'][i]} ${['User', 'Smith', 'Johnson', 'Williams', 'Brown'][i]}`,
-        password: hashedPassword
-      }
+  for (const userData of users) {
+    let user = await prisma.user.findUnique({
+      where: { email: userData.email }
     })
-    createdUsers.push(user)
-    console.log(`✅ Created user: ${user.email}`)
-  }
 
-  // Create User-Organization relationships - each user in multiple organizations
-  console.log('🔗 Linking users to multiple organizations...')
-  
-  // Define which organizations each user will be part of
-  const userOrgMappings = [
-    // admin@exponential.com - in 3 organizations
-    [
-      { userId: 0, organizationId: 0, role: 'admin' },      // Exponential (primary)
-      { userId: 0, organizationId: 1, role: 'consultant' }, // Sunrise
-      { userId: 0, organizationId: 2, role: 'advisor' }     // Mercy
-    ],
-    // doctor@sunrise.com - in 2 organizations
-    [
-      { userId: 1, organizationId: 1, role: 'doctor' },     // Sunrise (primary)
-      { userId: 1, organizationId: 3, role: 'consultant' }  // Advanced Care
-    ],
-    // nurse@mercy.com - in 3 organizations
-    [
-      { userId: 2, organizationId: 2, role: 'nurse' },      // Mercy (primary)
-      { userId: 2, organizationId: 0, role: 'nurse' },     // Exponential
-      { userId: 2, organizationId: 4, role: 'supervisor' }  // Community Health
-    ],
-    // therapist@advanced.com - in 2 organizations
-    [
-      { userId: 3, organizationId: 3, role: 'therapist' },   // Advanced Care (primary)
-      { userId: 3, organizationId: 1, role: 'consultant' }  // Sunrise
-    ],
-    // coordinator@community.com - in 3 organizations
-    [
-      { userId: 4, organizationId: 4, role: 'coordinator' }, // Community Health (primary)
-      { userId: 4, organizationId: 0, role: 'coordinator' }, // Exponential
-      { userId: 4, organizationId: 2, role: 'coordinator' }  // Mercy
-    ]
-  ]
-
-  for (const userOrgs of userOrgMappings) {
-    for (const userOrg of userOrgs) {
-      await prisma.userOrganization.create({
+    if (!user) {
+      console.log(`👤 Creating user: ${userData.name} (Global Role: ${userData.globalRole})`)
+      const hashedPassword = await hash(userData.password, 12)
+      
+      user = await prisma.user.create({
         data: {
-          userId: createdUsers[userOrg.userId].id,
-          organizationId: createdOrgs[userOrg.organizationId].id,
-          role: userOrg.role,
-          isActive: true,
-          joinedAt: new Date()
+          email: userData.email,
+          name: userData.name,
+          password: hashedPassword,
+          role: userData.globalRole,  // This is their GLOBAL role for admin panel access
+          settings: {
+            theme: 'dark',
+            notifications: {
+              email: true,
+              push: true,
+              sms: false
+            },
+            privacy: {
+              profileVisibility: 'private',
+              dataSharing: false,
+              analytics: true
+            }
+          }
         }
       })
-      console.log(`✅ Linked ${createdUsers[userOrg.userId].email} to ${createdOrgs[userOrg.organizationId].name} as ${userOrg.role}`)
+      console.log(`✅ User created: ${user.email}`)
+    } else {
+      console.log(`👤 User already exists: ${user.email} (Global Role: ${userData.globalRole})`)
     }
+    createdUsers.push(user)
   }
 
-  // Create Patients for each organization with completely different counts
-  console.log('🏥 Creating patients...')
-  const patientCounts = [8, 23, 17, 31, 12] // Completely different patient counts for each org
-  
-  for (let orgIndex = 0; orgIndex < createdOrgs.length; orgIndex++) {
-    const org = createdOrgs[orgIndex]
-    const patientCount = patientCounts[orgIndex]
-    
-    for (let i = 0; i < patientCount; i++) {
-      const patientData = generatePatientData(org.id, i)
-      
-      try {
-        const patient = await prisma.patient.upsert({
-          where: { medicalRecordNumber: patientData.medicalRecordNumber },
-          update: {},
-          create: patientData
-        })
-        console.log(`✅ Created patient: ${patient.firstName} ${patient.lastName} for ${org.name}`)
-      } catch (error) {
-        console.log(`⚠️ Skipped patient ${patientData.firstName} ${patientData.lastName} (likely duplicate)`)
-      }
+  // Create 3 healthcare organizations
+  const organizations = [
+    {
+      name: 'Exponential Healthcare Network',
+      type: 'healthcare_system',
+      address: '1234 Healthcare Boulevard',
+      city: 'Medical City',
+      state: 'CA',
+      zipCode: '90210',
+      phone: '+1-555-0123',
+      website: 'https://exponentialhealthcare.org'
+    },
+    {
+      name: 'Mercy General Hospital',
+      type: 'hospital',
+      address: '5678 Mercy Drive',
+      city: 'Healthcare Valley',
+      state: 'CA',
+      zipCode: '90211',
+      phone: '+1-555-0456',
+      website: 'https://mercygeneral.org'
+    },
+    {
+      name: 'Community Care Clinic',
+      type: 'clinic',
+      address: '9012 Community Way',
+      city: 'Wellness Town',
+      state: 'CA',
+      zipCode: '90212',
+      phone: '+1-555-0789',
+      website: 'https://communitycare.org'
     }
-    console.log(`✅ Created ${patientCount} patients for ${org.name}`)
-  }
-
-  // Create basic reference data for dashboard functionality
-  console.log('📋 Creating reference data...')
-  
-  // Create Services
-  const services = [
-    { name: 'Home Health Nursing', category: 'Home Health', description: 'Skilled nursing care in the home' },
-    { name: 'Physical Therapy', category: 'Therapy', description: 'Physical rehabilitation services' },
-    { name: 'Occupational Therapy', category: 'Therapy', description: 'Daily living skills therapy' },
-    { name: 'Speech Therapy', category: 'Therapy', description: 'Communication and swallowing therapy' },
-    { name: 'Medical Social Work', category: 'Support', description: 'Social and emotional support services' }
   ]
 
-  const createdServices = []
-  for (const serviceData of services) {
-    const service = await prisma.service.create({
-      data: serviceData
-    })
-    createdServices.push(service)
-  }
-  console.log('✅ Created services')
-
-  // Create Diagnoses
-  const diagnoses = [
-    { code: 'E11.9', display: 'Type 2 diabetes mellitus without complications', category: 'Endocrine' },
-    { code: 'I10', display: 'Essential (primary) hypertension', category: 'Cardiovascular' },
-    { code: 'E66.9', display: 'Obesity, unspecified', category: 'Endocrine' },
-    { code: 'J44.9', display: 'Chronic obstructive pulmonary disease, unspecified', category: 'Respiratory' },
-    { code: 'I25.10', display: 'Atherosclerotic heart disease without angina pectoris', category: 'Cardiovascular' }
-  ]
-
-  for (const diagnosisData of diagnoses) {
-    await prisma.diagnosis.upsert({
-      where: { code: diagnosisData.code },
+  const createdOrgs = []
+  for (const orgData of organizations) {
+    const org = await prisma.organization.upsert({
+      where: { name: orgData.name },
       update: {},
-      create: diagnosisData
+      create: orgData
+    })
+    createdOrgs.push(org)
+    console.log(`🏥 Organization created: ${org.name}`)
+  }
+
+  // Assign users to organizations with DIFFERENT roles than their global role
+  // This demonstrates the dual-role system
+  const userOrgAssignments = [
+    // Exponential Healthcare Network
+    { userId: createdUsers[0].id, organizationId: createdOrgs[0].id, role: OrganizationRole.OWNER },      // Superadmin as ORG OWNER
+    { userId: createdUsers[1].id, organizationId: createdOrgs[0].id, role: OrganizationRole.MEMBER },     // Admin as ORG MEMBER
+    { userId: createdUsers[2].id, organizationId: createdOrgs[0].id, role: OrganizationRole.ADMIN },      // Admin as ORG ADMIN
+    { userId: createdUsers[3].id, organizationId: createdOrgs[0].id, role: OrganizationRole.VIEWER },     // Member as ORG VIEWER
+    
+    // Mercy General Hospital
+    { userId: createdUsers[1].id, organizationId: createdOrgs[1].id, role: OrganizationRole.OWNER },      // Admin as ORG OWNER
+    { userId: createdUsers[0].id, organizationId: createdOrgs[1].id, role: OrganizationRole.MEMBER },     // Superadmin as ORG MEMBER
+    { userId: createdUsers[2].id, organizationId: createdOrgs[1].id, role: OrganizationRole.ADMIN },      // Admin as ORG ADMIN
+    { userId: createdUsers[3].id, organizationId: createdOrgs[1].id, role: OrganizationRole.MEMBER },     // Member as ORG MEMBER
+    
+    // Community Care Clinic
+    { userId: createdUsers[2].id, organizationId: createdOrgs[2].id, role: OrganizationRole.OWNER },      // Admin as ORG OWNER
+    { userId: createdUsers[0].id, organizationId: createdOrgs[2].id, role: OrganizationRole.MEMBER },     // Superadmin as ORG MEMBER
+    { userId: createdUsers[1].id, organizationId: createdOrgs[2].id, role: OrganizationRole.ADMIN },      // Admin as ORG ADMIN
+    { userId: createdUsers[3].id, organizationId: createdOrgs[2].id, role: OrganizationRole.VIEWER }      // Member as ORG VIEWER
+  ]
+
+  for (const assignment of userOrgAssignments) {
+    await prisma.userOrganization.upsert({
+      where: {
+        userId_organizationId: {
+          userId: assignment.userId,
+          organizationId: assignment.organizationId
+        }
+      },
+      update: { role: assignment.role },
+      create: assignment
     })
   }
-  console.log('✅ Created diagnoses')
 
-  // Create Payers
+  console.log('✅ Users assigned to organizations with dual-role system')
+  console.log('📋 Role Summary:')
+  console.log('   - Global Roles: Control admin panel access')
+  console.log('   - Organization Roles: Control org-specific permissions')
+
+  // Create comprehensive services
+  const services = [
+    { name: 'Home Health Care', category: 'Home Health', description: 'Comprehensive in-home healthcare services' },
+    { name: 'Physical Therapy', category: 'Rehabilitation', description: 'Physical rehabilitation and mobility training' },
+    { name: 'Occupational Therapy', category: 'Rehabilitation', description: 'Daily living skills and functional training' },
+    { name: 'Speech Therapy', category: 'Rehabilitation', description: 'Communication and swallowing rehabilitation' },
+    { name: 'Medical Equipment', category: 'Durable Medical Equipment', description: 'Home medical equipment and supplies' },
+    { name: 'Nursing Care', category: 'Skilled Nursing', description: 'Professional nursing care and monitoring' },
+    { name: 'Wound Care', category: 'Specialized Care', description: 'Advanced wound treatment and management' },
+    { name: 'Palliative Care', category: 'Specialized Care', description: 'Comfort and quality of life care' },
+    { name: 'Respiratory Therapy', category: 'Specialized Care', description: 'Breathing and respiratory support' },
+    { name: 'Nutrition Counseling', category: 'Wellness', description: 'Dietary guidance and meal planning' }
+  ]
+
+  for (const service of services) {
+    await prisma.service.createMany({
+      data: service,
+      skipDuplicates: true
+    })
+  }
+
+  console.log('✅ Comprehensive services created')
+
+  // Create comprehensive diagnoses
+  const diagnoses = [
+    { code: 'I50.9', display: 'Heart failure, unspecified', category: 'Cardiovascular' },
+    { code: 'J44.9', display: 'Chronic obstructive pulmonary disease, unspecified', category: 'Respiratory' },
+    { code: 'E11.9', display: 'Type 2 diabetes mellitus without complications', category: 'Endocrine' },
+    { code: 'I63.9', display: 'Cerebral infarction, unspecified', category: 'Neurological' },
+    { code: 'M79.3', display: 'Pain in unspecified site', category: 'Musculoskeletal' },
+    { code: 'I10', display: 'Essential (primary) hypertension', category: 'Cardiovascular' },
+    { code: 'M81.0', display: 'Age-related osteoporosis without current pathological fracture', category: 'Musculoskeletal' },
+    { code: 'G30.9', display: 'Alzheimer disease, unspecified', category: 'Neurological' },
+    { code: 'K76.0', display: 'Fatty (change of) liver, not elsewhere classified', category: 'Gastrointestinal' },
+    { code: 'N18.9', display: 'Chronic kidney disease, unspecified', category: 'Renal' },
+    { code: 'E78.5', display: 'Disorder of lipoprotein metabolism, unspecified', category: 'Endocrine' },
+    { code: 'F41.1', display: 'Anxiety disorder, unspecified', category: 'Mental Health' },
+    { code: 'F32.9', display: 'Major depressive disorder, unspecified', category: 'Mental Health' },
+    { code: 'R50.9', display: 'Fever, unspecified', category: 'General Symptoms' },
+    { code: 'R53.83', display: 'Other fatigue', category: 'General Symptoms' }
+  ]
+
+  for (const diagnosis of diagnoses) {
+    await prisma.diagnosis.createMany({
+      data: diagnosis,
+      skipDuplicates: true
+    })
+  }
+
+  console.log('✅ Comprehensive diagnoses created')
+
+  // Create comprehensive disciplines
+  const disciplines = [
+    { name: 'Physical Therapy', description: 'Rehabilitation through physical exercise and movement therapy' },
+    { name: 'Occupational Therapy', description: 'Helping patients regain daily living skills and independence' },
+    { name: 'Speech Therapy', description: 'Communication, language, and swallowing rehabilitation' },
+    { name: 'Nursing', description: 'Skilled nursing care, patient monitoring, and care coordination' },
+    { name: 'Social Work', description: 'Patient advocacy, resource coordination, and emotional support' },
+    { name: 'Respiratory Therapy', description: 'Breathing support and respiratory care management' },
+    { name: 'Nutrition', description: 'Dietary guidance and nutritional support planning' },
+    { name: 'Wound Care', description: 'Specialized wound treatment and healing management' },
+    { name: 'Palliative Care', description: 'Comfort care and quality of life enhancement' },
+    { name: 'Case Management', description: 'Care coordination and resource optimization' }
+  ]
+
+  for (const discipline of disciplines) {
+    await prisma.discipline.createMany({
+      data: discipline,
+      skipDuplicates: true
+    })
+  }
+
+  console.log('✅ Comprehensive disciplines created')
+
+  // Create comprehensive payers
   const payers = [
     { name: 'Medicare', type: 'Government' },
     { name: 'Medicaid', type: 'Government' },
     { name: 'Blue Cross Blue Shield', type: 'Commercial' },
     { name: 'Aetna', type: 'Commercial' },
-    { name: 'UnitedHealth', type: 'Commercial' }
+    { name: 'UnitedHealthcare', type: 'Commercial' },
+    { name: 'Cigna', type: 'Commercial' },
+    { name: 'Humana', type: 'Commercial' },
+    { name: 'Kaiser Permanente', type: 'Commercial' },
+    { name: 'Anthem', type: 'Commercial' },
+    { name: 'Molina Healthcare', type: 'Commercial' }
   ]
 
-  for (const payerData of payers) {
-    await prisma.payer.upsert({
-      where: { name: payerData.name },
-      update: {},
-      create: payerData
+  for (const payer of payers) {
+    await prisma.payer.createMany({
+      data: payer,
+      skipDuplicates: true
     })
   }
-  console.log('✅ Created payers')
 
-  // Create referrals for each organization's patients with completely different counts
-  console.log('📝 Creating referrals for each organization...')
-  const referralPercentages = [0.62, 0.78, 0.53, 0.87, 0.41] // Completely different referral rates for each org
-  
-  for (let orgIndex = 0; orgIndex < createdOrgs.length; orgIndex++) {
-    const org = createdOrgs[orgIndex]
-    console.log(`🏥 Creating referrals for ${org.name}...`)
-    
-    // Get all patients for this organization
-    const orgPatients = await prisma.patient.findMany({
-      where: { organizationId: org.id }
-    })
-    
-    // Create referrals for different percentages of patients in each organization
-    const referralCount = Math.floor(orgPatients.length * referralPercentages[orgIndex])
-    const patientsToRefer = orgPatients.slice(0, referralCount)
-    
-    for (let i = 0; i < patientsToRefer.length; i++) {
-      const patient = patientsToRefer[i]
+  console.log('✅ Comprehensive payers created')
+
+  // Create patients for each organization with different counts
+  const organizationPatients = [
+    // Exponential Healthcare Network - 13 patients
+    {
+      organizationId: createdOrgs[0].id,
+      count: 13,
+      prefix: 'EHN'
+    },
+    // Mercy General Hospital - 10 patients  
+    {
+      organizationId: createdOrgs[1].id,
+      count: 10,
+      prefix: 'MGH'
+    },
+    // Community Care Clinic - 8 patients
+    {
+      organizationId: createdOrgs[2].id,
+      count: 8,
+      prefix: 'CCC'
+    }
+  ]
+
+  const allPatients = []
+  for (const orgPatients of organizationPatients) {
+    const patients = []
+    for (let i = 1; i <= orgPatients.count; i++) {
+      const age = Math.floor(Math.random() * 40) + 50 // Ages 50-90
+      const gender = Math.random() > 0.5 ? 'M' : 'F'
+      const firstName = getRandomFirstName(gender)
+      const lastName = getRandomLastName()
       
-      try {
-        const referral = await prisma.referral.create({
-          data: {
-            patientId: patient.id,
-            livesWith: ['Spouse', 'Alone', 'Family'][Math.floor(Math.random() * 3)],
-            ecName: patient.emergencyContact || 'Emergency Contact',
-            ecPhone: patient.emergencyPhone || '+1-555-000-0000',
-            ecRelation: ['Spouse', 'Daughter', 'Son', 'Friend'][Math.floor(Math.random() * 4)],
-            ntaScore: ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)],
-            hmoPlanType: ['HMO', 'PPO', 'Medicare Advantage'][Math.floor(Math.random() * 3)],
-            medicareHmoProvider: ['HUMANA', 'AETNA', 'UNITEDHEALTH'][Math.floor(Math.random() * 3)],
-            primaryDxCode: diagnoses[Math.floor(Math.random() * diagnoses.length)].code,
-            primaryDxText: diagnoses[Math.floor(Math.random() * diagnoses.length)].display
-          }
-        })
-
-        // Add some services to the referral
-        const randomServices = createdServices.slice(0, Math.floor(Math.random() * 3) + 1)
-        for (const service of randomServices) {
-          await prisma.referralService.create({
-            data: {
-              referralId: referral.id,
-              serviceId: service.id,
-              status: ['pending', 'approved', 'completed'][Math.floor(Math.random() * 3)]
-            }
-          })
-        }
-
-        // Add some diagnoses to the referral
-        const randomDiagnoses = diagnoses.slice(0, Math.floor(Math.random() * diagnoses.length))
-        for (let j = 0; j < randomDiagnoses.length; j++) {
-          await prisma.referralDiagnosis.create({
-            data: {
-              referralId: referral.id,
-              diagnosisId: (await prisma.diagnosis.findUnique({ where: { code: randomDiagnoses[j].code } }))!.id,
-              isPrimary: j === 0 // First diagnosis is primary
-            }
-          })
-        }
-
-        // Add some coverage to the referral
-        const randomPayer = payers[Math.floor(Math.random() * payers.length)]
-        await prisma.referralCoverage.create({
-          data: {
-            referralId: referral.id,
-            payerId: (await prisma.payer.findUnique({ where: { name: randomPayer.name } }))!.id,
-            policyNumber: `POL${Math.floor(Math.random() * 900000) + 100000}`,
-            groupNumber: `GRP${Math.floor(Math.random() * 90000) + 10000}`,
-            status: ['pending', 'approved', 'denied'][Math.floor(Math.random() * 3)]
-          }
-        })
-
-        console.log(`✅ Created referral for ${patient.firstName} ${patient.lastName} in ${org.name}`)
-      } catch (error) {
-        console.log(`⚠️ Failed to create referral for ${patient.firstName} ${patient.lastName}: ${error}`)
-      }
+      patients.push({
+        firstName,
+        lastName,
+        dob: new Date(Date.now() - (age * 365 * 24 * 60 * 60 * 1000)),
+        sex: gender,
+        age,
+        phone: `+1-555-${String(1000 + i).padStart(4, '0')}`,
+        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${orgPatients.prefix.toLowerCase()}.org`,
+        addressLine1: `${Math.floor(Math.random() * 9999) + 1} ${getRandomStreetName()}`,
+        city: getRandomCity(),
+        state: 'CA',
+        postalCode: `${90210 + Math.floor(Math.random() * 20)}`,
+        primaryInsurance: getRandomInsurance(),
+        emergencyContact: `${getRandomFirstName('M')} ${lastName}`,
+        emergencyPhone: `+1-555-${String(2000 + i).padStart(4, '0')}`,
+        organizationId: orgPatients.organizationId
+      })
     }
     
-    console.log(`✅ Created ${patientsToRefer.length} referrals for ${org.name} (${Math.round(referralPercentages[orgIndex] * 100)}% of patients)`)
+    // Create patients for this organization
+    for (const patient of patients) {
+      const createdPatient = await prisma.patient.create({
+        data: patient
+      })
+      allPatients.push(createdPatient)
+    }
+    
+    console.log(`✅ ${orgPatients.count} patients created for ${createdOrgs.find(o => o.id === orgPatients.organizationId)?.name}`)
   }
 
-  console.log('🎉 Database seeding completed successfully!')
-  console.log('\n📊 Summary of created data:')
-  console.log('🏢 Organizations: 5')
-  console.log('👥 Users: 5 (each in 2-3 organizations)')
-  console.log('🏥 Patients: 8, 23, 17, 31, 12 (different for each org)')
-  console.log('📝 Referrals: Varying percentages (62%, 78%, 53%, 87%, 41%)')
+  // Create referrals for each organization with different counts
+  const organizationReferrals = [
+    // Exponential Healthcare Network - 8 referrals
+    {
+      organizationId: createdOrgs[0].id,
+      count: 8,
+      patientIds: allPatients.filter(p => p.organizationId === createdOrgs[0].id).map(p => p.id)
+    },
+    // Mercy General Hospital - 6 referrals
+    {
+      organizationId: createdOrgs[1].id,
+      count: 6,
+      patientIds: allPatients.filter(p => p.organizationId === createdOrgs[1].id).map(p => p.id)
+    },
+    // Community Care Clinic - 4 referrals
+    {
+      organizationId: createdOrgs[2].id,
+      count: 4,
+      patientIds: allPatients.filter(p => p.organizationId === createdOrgs[2].id).map(p => p.id)
+    }
+  ]
+
+  for (const orgReferrals of organizationReferrals) {
+    const referrals = []
+    for (let i = 0; i < orgReferrals.count; i++) {
+      const patientId = orgReferrals.patientIds[i]
+      const ntaScore = getRandomNTAScore()
+      const hmoPlanType = getRandomHMOPlanType()
+      const medicareHmoProvider = getRandomMedicareHMOProvider()
+      
+      referrals.push({
+        patientId,
+        livesWith: getRandomLivesWith(),
+        ecName: getRandomEmergencyContact(),
+        ecPhone: `+1-555-${String(3000 + i).padStart(4, '0')}`,
+        ecRelation: getRandomRelation(),
+        ntaScore,
+        hmoPlanType,
+        medicareHmoProvider,
+        primaryDxCode: getRandomDiagnosisCode(),
+        primaryDxText: getRandomDiagnosisText()
+      })
+    }
+    
+    // Create referrals for this organization
+    for (const referral of referrals) {
+      await prisma.referral.create({
+        data: referral
+      })
+    }
+    
+    console.log(`✅ ${orgReferrals.count} referrals created for ${createdOrgs.find(o => o.id === orgReferrals.organizationId)?.name}`)
+  }
+
+  console.log('🎉 Multi-organization database seeding completed successfully!')
+  console.log('📧 Superadmin login: admin@exponential.com')
+  console.log('🔑 Superadmin password: testing123')
+  console.log('👥 Users created: 4 (with dual-role system)')
+  console.log('🏥 Organizations created: 3')
+  console.log('👥 Total patients created: 31')
+  console.log('📋 Total referrals created: 18')
+  console.log('')
+  console.log('🔐 DUAL-ROLE SYSTEM IMPLEMENTED:')
+  console.log('   • Global Roles: Control admin panel access')
+  console.log('   • Organization Roles: Control org-specific permissions')
+  console.log('')
+  console.log('👤 USER ROLES SUMMARY:')
+  console.log('   • admin@exponential.com: SUPERADMIN (Global) + ORG OWNER/ADMIN/MEMBER')
+  console.log('   • dr.sarah@healthcare.org: ADMIN (Global) + ORG OWNER/ADMIN/MEMBER')
+  console.log('   • nurse.mike@healthcare.org: ADMIN (Global) + ORG OWNER/ADMIN/MEMBER')
+  console.log('   • therapist.lisa@healthcare.org: MEMBER (Global) + ORG VIEWER/MEMBER')
+  console.log('⚠️  IMPORTANT: Change passwords in production!')
+}
+
+// Helper functions for generating random data
+function getRandomFirstName(gender: string): string {
+  const maleNames = ['James', 'John', 'Robert', 'Michael', 'William', 'David', 'Richard', 'Joseph', 'Thomas', 'Christopher']
+  const femaleNames = ['Mary', 'Patricia', 'Jennifer', 'Linda', 'Elizabeth', 'Barbara', 'Susan', 'Jessica', 'Sarah', 'Karen']
+  const names = gender === 'M' ? maleNames : femaleNames
+  return names[Math.floor(Math.random() * names.length)]
+}
+
+function getRandomLastName(): string {
+  const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez']
+  return lastNames[Math.floor(Math.random() * lastNames.length)]
+}
+
+function getRandomStreetName(): string {
+  const streets = ['Oak Street', 'Pine Avenue', 'Maple Drive', 'Cedar Lane', 'Elm Court', 'Birch Road', 'Willow Way', 'Spruce Street']
+  return streets[Math.floor(Math.random() * streets.length)]
+}
+
+function getRandomCity(): string {
+  const cities = ['Medical City', 'Healthcare Valley', 'Wellness Town', 'Health Springs', 'Care Center', 'Medical Heights']
+  return cities[Math.floor(Math.random() * cities.length)]
+}
+
+function getRandomInsurance(): string {
+  const insurances = ['Medicare', 'Blue Cross Blue Shield', 'Aetna', 'UnitedHealthcare', 'Cigna', 'Humana', 'Kaiser Permanente']
+  return insurances[Math.floor(Math.random() * insurances.length)]
+}
+
+function getRandomNTAScore(): string {
+  const scores = ['Low', 'Medium', 'High', 'Very High']
+  return scores[Math.floor(Math.random() * scores.length)]
+}
+
+function getRandomHMOPlanType(): string {
+  const plans = ['Medicare Advantage', 'PPO', 'HMO', 'EPO', 'POS']
+  return plans[Math.floor(Math.random() * plans.length)]
+}
+
+function getRandomMedicareHMOProvider(): string {
+  const providers = ['HUMANA INSURANCE COMPANY', 'BLUE CROSS BLUE SHIELD', 'AETNA', 'UNITEDHEALTHCARE', 'CIGNA', 'KAISER PERMANENTE']
+  return providers[Math.floor(Math.random() * providers.length)]
+}
+
+function getRandomLivesWith(): string {
+  const options = ['Spouse', 'Alone', 'Family', 'Children', 'Caregiver']
+  return options[Math.floor(Math.random() * options.length)]
+}
+
+function getRandomEmergencyContact(): string {
+  const names = ['Michael', 'Lisa', 'David', 'Sarah', 'Robert', 'Jennifer', 'James', 'Patricia', 'John', 'Linda']
+  return names[Math.floor(Math.random() * names.length)]
+}
+
+function getRandomRelation(): string {
+  const relations = ['Spouse', 'Son', 'Daughter', 'Brother', 'Sister', 'Caregiver', 'Friend']
+  return relations[Math.floor(Math.random() * relations.length)]
+}
+
+function getRandomDiagnosisCode(): string {
+  const codes = ['I50.9', 'J44.9', 'E11.9', 'I63.9', 'M79.3', 'I10', 'M81.0', 'G30.9', 'K76.0', 'N18.9']
+  return codes[Math.floor(Math.random() * codes.length)]
+}
+
+function getRandomDiagnosisText(): string {
+  const diagnoses = [
+    'Heart failure, unspecified',
+    'Chronic obstructive pulmonary disease, unspecified',
+    'Type 2 diabetes mellitus without complications',
+    'Cerebral infarction, unspecified',
+    'Pain in unspecified site',
+    'Essential (primary) hypertension',
+    'Age-related osteoporosis without current pathological fracture',
+    'Alzheimer disease, unspecified',
+    'Fatty (change of) liver, not elsewhere classified',
+    'Chronic kidney disease, unspecified'
+  ]
+  return diagnoses[Math.floor(Math.random() * diagnoses.length)]
 }
 
 main()

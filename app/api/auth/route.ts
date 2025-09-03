@@ -98,9 +98,7 @@ export async function POST(request: NextRequest) {
 
         // Create session and set cookie
         try {
-            console.log('Creating session for user:', user.id);
             const { rawToken, expiresAt } = await createSession(user.id, request);
-            console.log('Session created successfully');
             
             // Get user's organizations
             const userOrgs = await prisma.userOrganization.findMany({
@@ -154,11 +152,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
     try {
-        console.log('GET endpoint called');
         const {searchParams} = new URL(request.url);
         const email = searchParams.get('email') ?? undefined;
         const phone = searchParams.get('phone') ?? undefined;
-        console.log('GET params - email:', email, 'phone:', phone);
         if (!email && !phone) {
             return NextResponse.json(
                 {error: 'Email or phone is required'},

@@ -5,6 +5,7 @@ interface User {
     id: string;
     email: string;
     name: string;
+    role: 'SUPERADMIN' | 'ADMIN' | 'MEMBER';
     organizationId?: string;
     primaryOrganization?: {
         id: string;
@@ -16,6 +17,7 @@ interface User {
         name: string;
         type: string;
         isActive: boolean;
+        role: 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER';
     }>;
 }
 
@@ -63,7 +65,7 @@ export function useAuth() {
             }
         } catch (error) {
             if (error.name === 'AbortError') {
-                console.log('Auth check timed out, treating as unauthenticated');
+                // Auth check timed out, treating as unauthenticated
             } else {
                 console.error('Auth check error:', error);
             }
