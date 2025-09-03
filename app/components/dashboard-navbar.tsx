@@ -123,7 +123,7 @@ export default function DashboardNavbar({
           {/* Navigation Items */}
           <div className="flex items-center space-x-2">
             <NavItem icon={FileText} label="Referrals" href="/dashboard/referrals" />
-            <NavItem icon={BarChart3} label="Analytics" />
+            <NavItem icon={BarChart3} label="Analytics" href="/dashboard/analytics" />
           </div>
 
           {/* Right Side Controls */}
@@ -254,7 +254,10 @@ export default function DashboardNavbar({
                     <User className="w-4 h-4 mr-3 text-slate-400 group-hover:text-cyan-400 transition-colors duration-200" />
                     {user?.name || 'Account'}
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 rounded-lg mx-2 my-1">
+                  <DropdownMenuItem 
+                    onClick={() => window.location.href = '/dashboard/settings'}
+                    className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 rounded-lg mx-2 my-1"
+                  >
                     <Settings className="w-4 h-4 mr-3 text-slate-400 group-hover:text-cyan-400 transition-colors duration-200" />
                     Settings
                   </DropdownMenuItem>

@@ -13,6 +13,7 @@ model User {
   name           String
   phone          String?       @unique
   password       String
+  settings       Json?         // Store user preferences as JSON
   sessions       Session[]
   userOrganizations UserOrganization[]
   createdAt      DateTime      @default(now())
@@ -144,6 +145,7 @@ model Referral {
   // Audit
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  completedAt DateTime? // When the referral was completed
 
   // Relations (many-to-many via join tables)
   coverages   ReferralCoverage[]

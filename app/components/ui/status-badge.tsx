@@ -1,5 +1,5 @@
 import { Badge } from "@/app/components/ui/badge"
-import { cn } from "@/lib/utils"
+import { cn } from "@/app/lib/utils"
 
 interface StatusBadgeProps {
   status: string
