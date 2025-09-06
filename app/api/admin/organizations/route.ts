@@ -1,39 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient, UserRole } from '@prisma/client'
+import { requireAdmin } from '@/app/lib/auth'
 
 const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if user is superadmin
-    const sessionResponse = await fetch(`${request.nextUrl.origin}/api/auth/session`, {
-      headers: {
-        cookie: request.headers.get('cookie') || '',
-      },
-    })
-
-    if (!sessionResponse.ok) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    const sessionData = await sessionResponse.json()
-    
-    if (!sessionData.authenticated || !sessionData.user) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    if (sessionData.user.role !== UserRole.SUPERADMIN) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      )
-    }
+    // Check authentication and admin permissions
+    const session = await requireAdmin();
+    console.log('Session found:', { userId: session.user.id, userRole: session.user.role })
 
     // Get all organizations with user counts
     const organizations = await prisma.organization.findMany({
@@ -85,6 +60,14 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching organizations:', error)
+    
+    if (error instanceof Error && (error.message === 'Authentication required' || error.message === 'Insufficient permissions')) {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.message === 'Authentication required' ? 401 : 403 }
+      )
+    }
+    
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -94,35 +77,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if user is superadmin
-    const sessionResponse = await fetch(`${request.nextUrl.origin}/api/auth/session`, {
-      headers: {
-        cookie: request.headers.get('cookie') || '',
-      },
-    })
-
-    if (!sessionResponse.ok) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    const sessionData = await sessionResponse.json()
-    
-    if (!sessionData.authenticated || !sessionData.user) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    if (sessionData.user.role !== UserRole.SUPERADMIN) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      )
-    }
+    // Check authentication and admin permissions
+    const session = await requireAdmin();
 
     const { name, type, address, city, state, zipCode, phone, website } = await request.json()
 
@@ -168,6 +124,14 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error creating organization:', error)
+    
+    if (error instanceof Error && (error.message === 'Authentication required' || error.message === 'Insufficient permissions')) {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.message === 'Authentication required' ? 401 : 403 }
+      )
+    }
+    
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

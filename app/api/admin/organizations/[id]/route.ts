@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient, UserRole } from '@prisma/client'
+import { requireAdmin } from '@/app/lib/auth'
 
 const prisma = new PrismaClient()
 
@@ -8,35 +9,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Check if user is superadmin or admin
-    const sessionResponse = await fetch(`${request.nextUrl.origin}/api/auth/session`, {
-      headers: {
-        cookie: request.headers.get('cookie') || '',
-      },
-    })
-
-    if (!sessionResponse.ok) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    const sessionData = await sessionResponse.json()
-    
-    if (!sessionData.authenticated || !sessionData.user) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    if (sessionData.user.role !== UserRole.SUPERADMIN && sessionData.user.role !== UserRole.ADMIN) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      )
-    }
+    // Check authentication and admin permissions
+    const session = await requireAdmin();
 
     const organizationId = params.id
 
@@ -145,6 +119,14 @@ export async function GET(
 
   } catch (error) {
     console.error('Error fetching organization:', error)
+    
+    if (error instanceof Error && (error.message === 'Authentication required' || error.message === 'Insufficient permissions')) {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.message === 'Authentication required' ? 401 : 403 }
+      )
+    }
+    
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

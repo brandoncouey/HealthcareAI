@@ -1,77 +1,56 @@
-import {AuthOptions} from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import bcrypt from 'bcryptjs';
-import prisma from '@/app/lib/prisma';
+import { PrismaClient } from '@prisma/client'
+import { cookies } from 'next/headers'
 
-const authOptions: AuthOptions = {
-    providers: [
-        CredentialsProvider({
-            name: 'credentials',
-            credentials: {
-                email: {label: 'Email', type: 'email'},
-                password: {label: 'Password', type: 'password'}
-            },
-            async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) {
-                    return null;
-                }
+const prisma = new PrismaClient()
 
-                try {
-                    const user = await prisma.user.findUnique({
-                        where: {
-                            email: credentials.email as string,
-                        },
-                    });
+// ===== Session validation utility =====
+async function hashToken(token: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(token);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return btoa(hashHex).slice(0, 32);
+}
 
-                    if (!user) {
-                        return null;
-                    }
+export async function getSession() {
+    const cookieStore = await cookies();
+    const c = cookieStore.get("sb.session");
+    if (!c?.value) return null;
 
-                    const passwordMatch = await bcrypt.compare(
-                        credentials.password as string,
-                        user.password
-                    );
+    const tokenHash = await hashToken(c.value);
 
-                    if (!passwordMatch) {
-                        return null;
-                    }
+    const session = await prisma.session.findUnique({
+        where: { tokenHash },
+        include: { user: true },
+    });
 
-                    return {
-                        id: user.id,
-                        email: user.email,
-                        name: user.name,
-                    };
-                } catch (error) {
-                    console.error('Auth error:', error);
-                    return null;
-                }
-            }
-        })
-    ],
-    session: {
-        strategy: 'jwt' as const,
-    },
-    pages: {
-        signIn: '/login',
-    },
-    callbacks: {
-        async jwt({token, user}) {
-            if (user) {
-                token.id = user.id;
-                token.email = user.email;
-                token.name = user.name;
-            }
-            return token;
-        },
-        async session({session, token}) {
-            if (token) {
-                session.user.id = token.id as string;
-                session.user.email = token.email as string;
-                session.user.name = token.name as string;
-            }
-            return session;
-        },
-    },
-};
+    if (!session) return null;
 
-export default authOptions;
+    if (session.expiresAt <= new Date()) {
+        await prisma.session.delete({ where: { tokenHash } }).catch(() => {});
+        return null;
+    }
+
+    return session;
+}
+
+export async function requireAuth() {
+    const session = await getSession();
+    
+    if (!session) {
+        throw new Error('Authentication required');
+    }
+    
+    return session;
+}
+
+export async function requireAdmin() {
+    const session = await requireAuth();
+    
+    if (session.user.role !== 'SUPERADMIN' && session.user.role !== 'ADMIN') {
+        throw new Error('Insufficient permissions');
+    }
+    
+    return session;
+}
