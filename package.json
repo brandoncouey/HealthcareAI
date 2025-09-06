@@ -15,7 +15,10 @@
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "clear": "rimraf .next tsconfig.tsbuildinfo",
-    "fresh": "pnpm clear && pnpm db:generate && pnpm dev"
+    "fresh": "pnpm clear && pnpm db:generate && pnpm dev",
+    "postinstall": "prisma generate",
+    "heroku-postbuild": "prisma generate && prisma migrate deploy && prisma db seed",
+    "seed:heroku": "node scripts/seed-heroku.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
