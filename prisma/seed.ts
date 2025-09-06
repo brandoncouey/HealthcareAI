@@ -474,6 +474,7 @@ function getRandomDiagnosisText(): string {
 main()
   .catch((e) => {
     console.error('❌ Error during seeding:', e)
+    console.error('Stack trace:', e.stack)
     process.exit(1)
   })
   .finally(async () => {
