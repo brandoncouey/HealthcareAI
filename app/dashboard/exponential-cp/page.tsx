@@ -4,7 +4,10 @@ import { useAuth } from '@/app/hooks/useAuth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
 import { Button } from '@/app/components/ui/button'
 import { Badge } from '@/app/components/ui/badge'
-import { Shield, Users, Building2, Settings, Database, Activity, Key, Plus, Eye, Edit, Trash2 } from 'lucide-react'
+import { Input } from '@/app/components/ui/input'
+import { Label } from '@/app/components/ui/label'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/app/components/ui/dialog'
+import { Shield, Users, Building2, Settings, Database, Activity, Key, Plus, Eye, Edit, Trash2, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import DashboardNavbar from '@/app/components/dashboard-navbar'
@@ -27,6 +30,18 @@ export default function ExponentialCPPage() {
   const [theme, setTheme] = useState<"dark" | "light">("dark")
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isCreating, setIsCreating] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    type: 'healthcare',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    phone: '',
+    website: ''
+  })
   
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark")
@@ -46,15 +61,74 @@ export default function ExponentialCPPage() {
 
   const fetchOrganizations = async () => {
     try {
-      const response = await fetch('/api/organizations')
+      const response = await fetch('/api/admin/organizations')
       if (response.ok) {
         const data = await response.json()
-        setOrganizations(data.organizations || [])
+        if (data.success) {
+          // Transform the data to match the expected interface
+          const transformedOrgs = data.organizations.map((org: any) => ({
+            id: org.id,
+            name: org.name,
+            type: org.type,
+            city: org.city || 'N/A',
+            state: org.state || 'N/A',
+            userCount: org._count.userOrganizations,
+            patientCount: org._count.patients,
+            referralCount: org.referralCount,
+            createdAt: org.createdAt
+          }))
+          setOrganizations(transformedOrgs)
+        }
       }
     } catch (error) {
       console.error('Failed to fetch organizations:', error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const createOrganization = async () => {
+    if (!formData.name.trim()) {
+      alert('Organization name is required')
+      return
+    }
+
+    setIsCreating(true)
+    try {
+      const response = await fetch('/api/admin/organizations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        // Reset form and close dialog
+        setFormData({
+          name: '',
+          type: 'healthcare',
+          address: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          phone: '',
+          website: ''
+        })
+        setIsCreateDialogOpen(false)
+        // Refresh organizations list
+        await fetchOrganizations()
+        alert('Organization created successfully!')
+      } else {
+        alert(data.error || 'Failed to create organization')
+      }
+    } catch (error) {
+      console.error('Error creating organization:', error)
+      alert('Failed to create organization')
+    } finally {
+      setIsCreating(false)
     }
   }
 
@@ -75,7 +149,7 @@ export default function ExponentialCPPage() {
       title: 'Create Organization',
       description: 'Create new healthcare organizations',
       icon: Plus,
-      href: '/dashboard/exponential-cp/organizations/create',
+      action: 'create-organization',
       color: 'bg-green-500/10 text-green-400 border-green-500/20'
     },
     {
@@ -208,13 +282,207 @@ export default function ExponentialCPPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-white">All Organizations</h2>
-            <Button 
-              className="bg-blue-600 hover:bg-blue-700 text-white border-0"
-              onClick={() => router.push('/dashboard/exponential-cp/organizations/create')}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Create Organization
-            </Button>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white border-0">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Organization
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px] bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 border-slate-700/50 backdrop-blur-sm">
+                <DialogHeader className="space-y-3 pb-6 border-b border-slate-700/50">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+                      <Building2 className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <DialogTitle className="text-xl font-bold text-white">Create New Organization</DialogTitle>
+                      <DialogDescription className="text-slate-300 mt-1">
+                        Add a new healthcare organization to the system with all necessary details.
+                      </DialogDescription>
+                    </div>
+                  </div>
+                </DialogHeader>
+                
+                <div className="space-y-6 py-6">
+                  {/* Basic Information Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <div className="h-px bg-gradient-to-r from-blue-500/50 to-transparent flex-1"></div>
+                      <span className="text-sm font-medium text-blue-400 px-3">Basic Information</span>
+                      <div className="h-px bg-gradient-to-l from-blue-500/50 to-transparent flex-1"></div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name" className="text-sm font-medium text-slate-300 flex items-center">
+                          Organization Name *
+                          <span className="text-red-400 ml-1">*</span>
+                        </Label>
+                        <Input
+                          id="name"
+                          value={formData.name}
+                          onChange={(e) => setFormData({...formData, name: e.target.value})}
+                          className="bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-300"
+                          placeholder="Enter organization name"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="type" className="text-sm font-medium text-slate-300">
+                          Organization Type
+                        </Label>
+                        <select
+                          id="type"
+                          value={formData.type}
+                          onChange={(e) => setFormData({...formData, type: e.target.value})}
+                          className="w-full bg-slate-700/50 border border-slate-600/50 text-white rounded-md px-3 py-2 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-300"
+                        >
+                          <option value="healthcare">Healthcare</option>
+                          <option value="hospital">Hospital</option>
+                          <option value="clinic">Clinic</option>
+                          <option value="healthcare_system">Healthcare System</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contact Information Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <div className="h-px bg-gradient-to-r from-green-500/50 to-transparent flex-1"></div>
+                      <span className="text-sm font-medium text-green-400 px-3">Contact Information</span>
+                      <div className="h-px bg-gradient-to-l from-green-500/50 to-transparent flex-1"></div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="phone" className="text-sm font-medium text-slate-300">
+                          Phone Number
+                        </Label>
+                        <Input
+                          id="phone"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                          className="bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400 focus:border-green-500/50 focus:ring-green-500/20 transition-all duration-300"
+                          placeholder="+1 (555) 123-4567"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="website" className="text-sm font-medium text-slate-300">
+                          Website URL
+                        </Label>
+                        <Input
+                          id="website"
+                          value={formData.website}
+                          onChange={(e) => setFormData({...formData, website: e.target.value})}
+                          className="bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400 focus:border-green-500/50 focus:ring-green-500/20 transition-all duration-300"
+                          placeholder="https://example.com"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Address Information Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <div className="h-px bg-gradient-to-r from-purple-500/50 to-transparent flex-1"></div>
+                      <span className="text-sm font-medium text-purple-400 px-3">Address Information</span>
+                      <div className="h-px bg-gradient-to-l from-purple-500/50 to-transparent flex-1"></div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="address" className="text-sm font-medium text-slate-300">
+                          Street Address
+                        </Label>
+                        <Input
+                          id="address"
+                          value={formData.address}
+                          onChange={(e) => setFormData({...formData, address: e.target.value})}
+                          className="bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400 focus:border-purple-500/50 focus:ring-purple-500/20 transition-all duration-300"
+                          placeholder="123 Main Street"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="city" className="text-sm font-medium text-slate-300">
+                            City
+                          </Label>
+                          <Input
+                            id="city"
+                            value={formData.city}
+                            onChange={(e) => setFormData({...formData, city: e.target.value})}
+                            className="bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400 focus:border-purple-500/50 focus:ring-purple-500/20 transition-all duration-300"
+                            placeholder="City"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="state" className="text-sm font-medium text-slate-300">
+                            State
+                          </Label>
+                          <Input
+                            id="state"
+                            value={formData.state}
+                            onChange={(e) => setFormData({...formData, state: e.target.value})}
+                            className="bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400 focus:border-purple-500/50 focus:ring-purple-500/20 transition-all duration-300"
+                            placeholder="CA"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="zipCode" className="text-sm font-medium text-slate-300">
+                            ZIP Code
+                          </Label>
+                          <Input
+                            id="zipCode"
+                            value={formData.zipCode}
+                            onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
+                            className="bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400 focus:border-purple-500/50 focus:ring-purple-500/20 transition-all duration-300"
+                            placeholder="90210"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <DialogFooter className="pt-6 border-t border-slate-700/50">
+                  <div className="flex space-x-3 w-full">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsCreateDialogOpen(false)}
+                      className="flex-1 h-11 bg-slate-800/50 border-slate-600/50 text-slate-300 hover:bg-slate-700/70 hover:text-white hover:border-slate-500/70 transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/20"
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={createOrganization}
+                      disabled={isCreating || !formData.name.trim()}
+                      className="flex-1 h-11 bg-slate-800/80 border border-slate-600/50 text-white hover:bg-slate-700/80 hover:border-slate-500/70 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-800/80 disabled:hover:border-slate-600/50"
+                    >
+                      {isCreating ? (
+                        <>
+                          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                          Creating...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Create Organization
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
           
           {isLoading ? (
@@ -229,7 +497,7 @@ export default function ExponentialCPPage() {
                 <p className="text-slate-400 mb-4">Get started by creating your first healthcare organization.</p>
                 <Button 
                   className="bg-blue-600 hover:bg-blue-700 text-white border-0"
-                  onClick={() => router.push('/dashboard/exponential-cp/organizations/create')}
+                  onClick={() => setIsCreateDialogOpen(true)}
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Create Organization
@@ -314,9 +582,15 @@ export default function ExponentialCPPage() {
               <CardContent className="pt-0">
                 <Button 
                   className="w-full border-slate-600 bg-slate-800/50 text-slate-200 hover:bg-slate-700 hover:text-white hover:border-slate-500"
-                  onClick={() => router.push(feature.href)}
+                  onClick={() => {
+                    if (feature.action === 'create-organization') {
+                      setIsCreateDialogOpen(true)
+                    } else if (feature.href) {
+                      router.push(feature.href)
+                    }
+                  }}
                 >
-                  Access {feature.title}
+                  {feature.action === 'create-organization' ? 'Create Organization' : `Access ${feature.title}`}
                 </Button>
               </CardContent>
             </Card>

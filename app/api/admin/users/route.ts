@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient, UserRole } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if user is superadmin
+    // Check if user is superadmin or admin
     const sessionResponse = await fetch(`${request.nextUrl.origin}/api/auth/session`, {
       headers: {
         cookie: request.headers.get('cookie') || '',
@@ -28,40 +29,28 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    if (sessionData.user.role !== UserRole.SUPERADMIN) {
+    if (sessionData.user.role !== UserRole.SUPERADMIN && sessionData.user.role !== UserRole.ADMIN) {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions' },
         { status: 403 }
       )
     }
 
-    // Get all organizations with user counts
-    const organizations = await prisma.organization.findMany({
+    // Get all users with their organization memberships
+    const users = await prisma.user.findMany({
       include: {
         _count: {
           select: {
-            userOrganizations: true,
-            patients: true,
-            invitations: {
-              where: {
-                status: 'PENDING'
-              }
-            }
-          }
-        },
-        patients: {
-          include: {
-            referrals: true
+            userOrganizations: true
           }
         },
         userOrganizations: {
           include: {
-            user: {
+            organization: {
               select: {
                 id: true,
                 name: true,
-                email: true,
-                role: true
+                type: true
               }
             }
           }
@@ -72,19 +61,29 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Transform organizations to include referral counts
-    const transformedOrganizations = organizations.map(org => ({
-      ...org,
-      referralCount: org.patients.reduce((sum, patient) => sum + patient.referrals.length, 0)
-    }))
+    // Calculate stats
+    const stats = {
+      totalUsers: users.length,
+      superAdmins: users.filter(u => u.role === UserRole.SUPERADMIN).length,
+      admins: users.filter(u => u.role === UserRole.ADMIN).length,
+      members: users.filter(u => u.role === UserRole.MEMBER).length,
+      activeUsers: users.filter(u => u.userOrganizations.some(uo => uo.isActive)).length,
+      inactiveUsers: users.filter(u => !u.userOrganizations.some(uo => uo.isActive)).length,
+      recentSignups: users.filter(u => {
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        return new Date(u.createdAt) >= thirtyDaysAgo
+      }).length
+    }
 
     return NextResponse.json({
       success: true,
-      organizations: transformedOrganizations
+      users,
+      stats
     })
 
   } catch (error) {
-    console.error('Error fetching organizations:', error)
+    console.error('Error fetching users:', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -94,7 +93,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if user is superadmin
+    // Check if user is superadmin or admin
     const sessionResponse = await fetch(`${request.nextUrl.origin}/api/auth/session`, {
       headers: {
         cookie: request.headers.get('cookie') || '',
@@ -117,57 +116,73 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (sessionData.user.role !== UserRole.SUPERADMIN) {
+    if (sessionData.user.role !== UserRole.SUPERADMIN && sessionData.user.role !== UserRole.ADMIN) {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions' },
         { status: 403 }
       )
     }
 
-    const { name, type, address, city, state, zipCode, phone, website } = await request.json()
+    const { name, email, phone, password, role } = await request.json()
 
     // Validate required fields
-    if (!name || !type) {
+    if (!name || !email || !password) {
       return NextResponse.json(
-        { success: false, error: 'Name and type are required' },
+        { success: false, error: 'Name, email, and password are required' },
         { status: 400 }
       )
     }
 
-    // Check if organization name already exists
-    const existingOrg = await prisma.organization.findUnique({
-      where: { name }
+    // Validate role
+    if (!Object.values(UserRole).includes(role)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid role' },
+        { status: 400 }
+      )
+    }
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
     })
 
-    if (existingOrg) {
+    if (existingUser) {
       return NextResponse.json(
-        { success: false, error: 'Organization name already exists' },
+        { success: false, error: 'User with this email already exists' },
         { status: 400 }
       )
     }
 
-    // Create organization
-    const organization = await prisma.organization.create({
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12)
+
+    // Create user
+    const user = await prisma.user.create({
       data: {
         name,
-        type,
-        address,
-        city,
-        state,
-        zipCode,
+        email,
         phone,
-        website
+        password: hashedPassword,
+        role: role as UserRole
       }
     })
 
     return NextResponse.json({
       success: true,
-      organization,
-      message: 'Organization created successfully'
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      },
+      message: 'User created successfully'
     })
 
   } catch (error) {
-    console.error('Error creating organization:', error)
+    console.error('Error creating user:', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

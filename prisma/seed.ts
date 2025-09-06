@@ -1,35 +1,38 @@
 import { PrismaClient, UserRole, OrganizationRole } from '@prisma/client'
-import { hash } from 'bcryptjs'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 async function main() {
   console.log('🌱 Starting comprehensive multi-organization database seed...')
 
+  // Hash the password once for all users
+  const hashedPassword = await bcrypt.hash('testing123', 12)
+  
   // Create multiple users with different global roles
   const users = [
     {
       email: 'admin@exponential.com',
       name: 'Exponential AI Admin',
-      password: 'testing123',
+      password: hashedPassword,
       globalRole: UserRole.SUPERADMIN  // Global role for admin panel access
     },
     {
       email: 'dr.sarah@healthcare.org',
       name: 'Dr. Sarah Martinez',
-      password: 'testing123',
+      password: hashedPassword,
       globalRole: UserRole.ADMIN  // Global role for admin panel access
     },
     {
       email: 'nurse.mike@healthcare.org',
       name: 'Mike Johnson',
-      password: 'testing123',
+      password: hashedPassword,
       globalRole: UserRole.ADMIN  // Global role for admin panel access
     },
     {
       email: 'therapist.lisa@healthcare.org',
       name: 'Lisa Thompson',
-      password: 'testing123',
+      password: hashedPassword,
       globalRole: UserRole.MEMBER  // Global role - no admin panel access
     }
   ]
@@ -43,13 +46,12 @@ async function main() {
 
     if (!user) {
       console.log(`👤 Creating user: ${userData.name} (Global Role: ${userData.globalRole})`)
-      const hashedPassword = await hash(userData.password, 12)
       
       user = await prisma.user.create({
         data: {
           email: userData.email,
           name: userData.name,
-          password: hashedPassword,
+          password: userData.password,
           role: userData.globalRole,  // This is their GLOBAL role for admin panel access
           settings: {
             theme: 'dark',
@@ -372,7 +374,7 @@ async function main() {
 
   console.log('🎉 Multi-organization database seeding completed successfully!')
   console.log('📧 Superadmin login: admin@exponential.com')
-  console.log('🔑 Superadmin password: testing123')
+  console.log('🔑 All user passwords: testing123')
   console.log('👥 Users created: 4 (with dual-role system)')
   console.log('🏥 Organizations created: 3')
   console.log('👥 Total patients created: 31')
