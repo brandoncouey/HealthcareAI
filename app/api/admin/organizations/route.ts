@@ -13,32 +13,29 @@ export async function GET(request: NextRequest) {
     })
 
     if (!sessionResponse.ok) {
-      console.error('Session response not ok:', sessionResponse.status, sessionResponse.statusText)
       return NextResponse.json(
-        { success: false, error: 'Authentication required', details: `Session response: ${sessionResponse.status}` },
+        { success: false, error: 'Authentication required' },
         { status: 401 }
       )
     }
 
     const sessionData = await sessionResponse.json()
-    console.log('Session data:', { authenticated: sessionData.authenticated, userRole: sessionData.user?.role })
     
     if (!sessionData.authenticated || !sessionData.user) {
       return NextResponse.json(
-        { success: false, error: 'Authentication required', details: 'No authenticated user' },
+        { success: false, error: 'Authentication required' },
         { status: 401 }
       )
     }
 
-    if (sessionData.user.role !== UserRole.SUPERADMIN && sessionData.user.role !== UserRole.ADMIN) {
+    if (sessionData.user.role !== UserRole.SUPERADMIN) {
       return NextResponse.json(
-        { success: false, error: 'Insufficient permissions', details: `User role: ${sessionData.user.role}` },
+        { success: false, error: 'Insufficient permissions' },
         { status: 403 }
       )
     }
 
     // Get all organizations with user counts
-    console.log('Fetching organizations from database...')
     const organizations = await prisma.organization.findMany({
       include: {
         _count: {
@@ -75,8 +72,6 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    console.log(`Found ${organizations.length} organizations`)
-
     // Transform organizations to include referral counts
     const transformedOrganizations = organizations.map(org => ({
       ...org,
@@ -91,12 +86,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching organizations:', error)
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
-      },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -127,7 +117,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (sessionData.user.role !== UserRole.SUPERADMIN && sessionData.user.role !== UserRole.ADMIN) {
+    if (sessionData.user.role !== UserRole.SUPERADMIN) {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions' },
         { status: 403 }
