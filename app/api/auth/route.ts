@@ -72,7 +72,12 @@ export async function POST(request: NextRequest) {
 
         const isEmailLogin = isEmail !== undefined ? isEmail : loginIdentifier.includes('@');
         const user = await prisma.user.findFirst({
-            where: isEmailLogin ? { email: loginIdentifier } : { phone: loginIdentifier },
+            where: isEmailLogin ? { 
+                email: {
+                    equals: loginIdentifier,
+                    mode: 'insensitive' as const
+                }
+            } : { phone: loginIdentifier },
             select : {
                 id: true,
                 name: true,
@@ -161,7 +166,17 @@ export async function GET(request: NextRequest) {
             );
         }
         const user = await prisma.user.findFirst({
-            where: {OR: [{email}, {phone}]}
+            where: {
+                OR: [
+                    email ? { 
+                        email: {
+                            equals: email,
+                            mode: 'insensitive' as const
+                        }
+                    } : {},
+                    phone ? { phone } : {}
+                ].filter(condition => Object.keys(condition).length > 0)
+            }
         });
         return NextResponse.json({exists: !!user}, {status: 200});
 
