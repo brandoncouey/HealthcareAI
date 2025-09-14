@@ -1,7 +1,7 @@
 # Authentication System Implementation
 
 ## Overview
-This document describes the complete authentication system implemented for the Exponential AI Tech dashboard application.
+This document describes the complete authentication system implemented for the Healthcare AI Tech dashboard application.
 
 ## Components
 

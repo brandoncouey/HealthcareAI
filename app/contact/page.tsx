@@ -40,7 +40,7 @@ export default function ContactPage() {
                 <div className="space-y-6">
                   <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-[#00B5E2] to-white animate-gradient-x">Get in Touch</h2>
                   <p className="text-slate-400 text-lg">
-                    Ready to transform your PAC facility's efficiency? We're here to help you get started with Exponential Triage.
+                    Ready to transform your PAC facility's efficiency? We're here to help you get started with Healthcare AI.
                   </p>
 
                   <div className="space-y-4">
@@ -52,7 +52,7 @@ export default function ContactPage() {
                       </div>
                       <div>
                         <p className="text-slate-300 font-medium">Email</p>
-                        <p className="text-slate-400">support@exponentialplatform.com</p>
+                        <p className="text-slate-400">support@healthcareai.com</p>
                       </div>
                     </div>
 

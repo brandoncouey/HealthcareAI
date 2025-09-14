@@ -1,4 +1,4 @@
-# Exponential AI Tech Platform
+# Healthcare AI Tech Platform
 
 > A modern healthcare technology platform built with Next.js 15, featuring AI-powered triage solutions for healthcare facilities. This platform streamlines bed management, referral processing, and patient care coordination through intelligent automation.
 
@@ -24,7 +24,7 @@
 
 ## Overview
 
-Exponential AI Tech Platform is a comprehensive healthcare management solution designed for post-acute care operators such as Skilled Nursing Facilities (SNFs) and Home Health Agencies (HHAs). The platform leverages artificial intelligence to streamline operations, improve patient care, and optimize resource utilization.
+Healthcare AI Tech Platform is a comprehensive healthcare management solution designed for post-acute care operators such as Skilled Nursing Facilities (SNFs) and Home Health Agencies (HHAs). The platform leverages artificial intelligence to streamline operations, improve patient care, and optimize resource utilization.
 
 ### Key Benefits
 
@@ -112,7 +112,7 @@ Exponential AI Tech Platform is a comprehensive healthcare management solution d
 ## Project Structure
 
 ```
-exponential-ai-tech/
+healthcare-ai-tech/
 ├── 📁 app/                          # Next.js App Router
 │   ├── 📁 api/                      # API routes
 │   │   ├── 📁 auth/                 # Authentication endpoints
@@ -168,7 +168,7 @@ Before setting up this project, ensure you have the following installed:
 
 ```bash
 git clone <repository-url>
-cd exponential-ai-tech
+cd healthcare-ai-tech
 ```
 
 #### 2. Install Dependencies
@@ -183,7 +183,7 @@ Create a `.env.local` file in the root directory:
 
 ```env
 # Database Configuration
-DATABASE_URL="postgresql://username:password@localhost:5432/exponential_db"
+DATABASE_URL="postgresql://username:password@localhost:5432/healthcare_db"
 
 # NextAuth Configuration
 NEXTAUTH_SECRET="your-secret-key-here"
@@ -369,7 +369,7 @@ The project includes optimized Next.js configuration:
 
 ## Contributing
 
-We welcome contributions to improve the Exponential AI Tech Platform.
+We welcome contributions to improve the Healthcare AI Tech Platform.
 
 ### Contribution Guidelines
 
@@ -403,7 +403,7 @@ We welcome contributions to improve the Exponential AI Tech Platform.
 
 For technical support or questions about the platform:
 
-- **Email**: support@exponentialplatform.com
+- **Email**: support@healthcareai.com
 - **Documentation**: [Internal documentation link]
 - **Issues**: [Repository issues page]
 
@@ -427,4 +427,4 @@ This project is proprietary software. All rights reserved.
 
 **Built with modern web technologies to revolutionize healthcare technology management.**
 
-*Exponential AI Tech Platform - Transforming Healthcare Through Intelligent Automation*
+*Healthcare AI Tech Platform - Transforming Healthcare Through Intelligent Automation*

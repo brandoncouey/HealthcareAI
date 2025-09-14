@@ -1,7 +1,7 @@
 /**
  * Tailwind CSS Configuration
  * 
- * Custom configuration for the Exponential AI platform.
+ * Custom configuration for the Healthcare AI platform.
  * Includes design system colors, animations, and component styles.
  */
 

@@ -1,7 +1,7 @@
 /**
  * Homepage Component
  * 
- * Main landing page for the Exponential AI platform.
+ * Main landing page for the Healthcare AI platform.
  * Features hero section, problem/solution sections, and demo booking form.
  * Authentication redirects are handled client-side.
  */

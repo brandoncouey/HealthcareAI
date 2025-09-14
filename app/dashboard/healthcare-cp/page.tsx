@@ -24,7 +24,7 @@ interface Organization {
   createdAt: string
 }
 
-export default function ExponentialCPPage() {
+export default function HealthcareCPPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [theme, setTheme] = useState<"dark" | "light">("dark")
@@ -156,35 +156,35 @@ export default function ExponentialCPPage() {
       title: 'User Management',
       description: 'Create, edit, and manage all system users',
       icon: Users,
-      href: '/dashboard/exponential-cp/users',
+      href: '/dashboard/healthcare-cp/users',
       color: 'bg-blue-500/10 text-blue-400 border-blue-500/20'
     },
     {
       title: 'System Settings',
       description: 'Manage system-wide configurations',
       icon: Settings,
-      href: '/dashboard/exponential-cp/system',
+      href: '/dashboard/healthcare-cp/system',
       color: 'bg-purple-500/10 text-purple-400 border-purple-500/20'
     },
     {
       title: 'Database Administration',
       description: 'Database monitoring, backups, and maintenance',
       icon: Database,
-      href: '/dashboard/exponential-cp/database',
+      href: '/dashboard/healthcare-cp/database',
       color: 'bg-orange-500/10 text-orange-400 border-orange-500/20'
     },
     {
       title: 'System Analytics',
       description: 'System-wide performance and usage analytics',
       icon: Activity,
-      href: '/dashboard/exponential-cp/analytics',
+      href: '/dashboard/healthcare-cp/analytics',
       color: 'bg-red-500/10 text-red-400 border-red-500/20'
     },
     {
       title: 'Security & Access',
       description: 'Manage security policies and access controls',
       icon: Key,
-      href: '/dashboard/exponential-cp/security',
+      href: '/dashboard/healthcare-cp/security',
       color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
     }
   ]
@@ -208,7 +208,7 @@ export default function ExponentialCPPage() {
               <Shield className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-white">ExponentialCP</h1>
+              <h1 className="text-4xl font-bold text-white">HealthcareCP</h1>
               <p className="text-slate-300 text-lg">
                 System Administration & Organization Management
               </p>
@@ -541,7 +541,7 @@ export default function ExponentialCPPage() {
                           size="sm" 
                           variant="outline"
                           className="flex-1 border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white"
-                          onClick={() => router.push(`/dashboard/exponential-cp/organizations/${org.id}`)}
+                          onClick={() => router.push(`/dashboard/healthcare-cp/organizations/${org.id}`)}
                         >
                           <Eye className="mr-1 h-3 w-3" />
                           View
@@ -550,7 +550,7 @@ export default function ExponentialCPPage() {
                           size="sm" 
                           variant="outline"
                           className="flex-1 border-slate-600 text-slate-200 hover:bg-slate-700 hover:text-white"
-                          onClick={() => router.push(`/dashboard/exponential-cp/organizations/${org.id}/edit`)}
+                          onClick={() => router.push(`/dashboard/healthcare-cp/organizations/${org.id}/edit`)}
                         >
                           <Edit className="mr-1 h-3 w-3" />
                           Edit

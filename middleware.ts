@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Routes that require authentication
-const protectedRoutes = ['/dashboard', '/admin', '/exponential-cp', '/settings']
+const protectedRoutes = ['/dashboard', '/admin', '/healthcare-cp', '/settings']
 
 // Routes that require specific global roles
-const superAdminRoutes = ['/exponential-cp']
-const adminRoutes = ['/exponential-cp']
+const superAdminRoutes = ['/healthcare-cp']
+const adminRoutes = ['/healthcare-cp']
 
 // Routes that require organization admin roles
 const organizationAdminRoutes = ['/admin']

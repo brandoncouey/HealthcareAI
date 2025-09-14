@@ -12,8 +12,8 @@ async function main() {
   // Create multiple users with different global roles
   const users = [
     {
-      email: 'admin@exponential.com',
-      name: 'Exponential AI Admin',
+      email: 'admin@healthcare.com',
+      name: 'Healthcare AI Admin',
       password: hashedPassword,
       globalRole: UserRole.SUPERADMIN  // Global role for admin panel access
     },
@@ -78,14 +78,14 @@ async function main() {
   // Create 3 healthcare organizations
   const organizations = [
     {
-      name: 'Exponential Healthcare Network',
+      name: 'Healthcare AI Network',
       type: 'healthcare_system',
       address: '1234 Healthcare Boulevard',
       city: 'Medical City',
       state: 'CA',
       zipCode: '90210',
       phone: '+1-555-0123',
-      website: 'https://exponentialhealthcare.org'
+      website: 'https://healthcareai.org'
     },
     {
       name: 'Mercy General Hospital',
@@ -123,7 +123,7 @@ async function main() {
   // Assign users to organizations with DIFFERENT roles than their global role
   // This demonstrates the dual-role system
   const userOrgAssignments = [
-    // Exponential Healthcare Network
+    // Healthcare AI Network
     { userId: createdUsers[0].id, organizationId: createdOrgs[0].id, role: OrganizationRole.OWNER },      // Superadmin as ORG OWNER
     { userId: createdUsers[1].id, organizationId: createdOrgs[0].id, role: OrganizationRole.MEMBER },     // Admin as ORG MEMBER
     { userId: createdUsers[2].id, organizationId: createdOrgs[0].id, role: OrganizationRole.ADMIN },      // Admin as ORG ADMIN
@@ -259,7 +259,7 @@ async function main() {
 
   // Create patients for each organization with different counts
   const organizationPatients = [
-    // Exponential Healthcare Network - 13 patients
+    // Healthcare AI Network - 13 patients
     {
       organizationId: createdOrgs[0].id,
       count: 13,
@@ -320,7 +320,7 @@ async function main() {
 
   // Create referrals for each organization with different counts
   const organizationReferrals = [
-    // Exponential Healthcare Network - 8 referrals
+    // Healthcare AI Network - 8 referrals
     {
       organizationId: createdOrgs[0].id,
       count: 8,
@@ -373,7 +373,7 @@ async function main() {
   }
 
   console.log('🎉 Multi-organization database seeding completed successfully!')
-  console.log('📧 Superadmin login: admin@exponential.com')
+  console.log('📧 Superadmin login: admin@healthcare.com')
   console.log('🔑 All user passwords: testing123')
   console.log('👥 Users created: 4 (with dual-role system)')
   console.log('🏥 Organizations created: 3')
@@ -385,7 +385,7 @@ async function main() {
   console.log('   • Organization Roles: Control org-specific permissions')
   console.log('')
   console.log('👤 USER ROLES SUMMARY:')
-  console.log('   • admin@exponential.com: SUPERADMIN (Global) + ORG OWNER/ADMIN/MEMBER')
+  console.log('   • admin@healthcare.com: SUPERADMIN (Global) + ORG OWNER/ADMIN/MEMBER')
   console.log('   • dr.sarah@healthcare.org: ADMIN (Global) + ORG OWNER/ADMIN/MEMBER')
   console.log('   • nurse.mike@healthcare.org: ADMIN (Global) + ORG OWNER/ADMIN/MEMBER')
   console.log('   • therapist.lisa@healthcare.org: MEMBER (Global) + ORG VIEWER/MEMBER')

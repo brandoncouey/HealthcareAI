@@ -33,7 +33,7 @@ export default function PrivacyPage() {
 
             <div className="prose prose-invert max-w-none">
               <p className="text-slate-300 mb-8">
-                Welcome to Exponential LLC ("we," "our," "us")! Your privacy is important to us, and we are committed to protecting your personal information when you interact with our website and services. This Privacy Policy outlines how we collect, use, and protect your data while using our website at www.exponetialtriage.com ("Website") and other related platforms, applications, and services.
+                Welcome to Healthcare AI LLC ("we," "our," "us")! Your privacy is important to us, and we are committed to protecting your personal information when you interact with our website and services. This Privacy Policy outlines how we collect, use, and protect your data while using our website at www.healthcareai.com ("Website") and other related platforms, applications, and services.
               </p>
 
               <h2 className="text-2xl font-bold text-slate-100 mb-4">Acceptance and Jurisdiction</h2>
@@ -72,7 +72,7 @@ export default function PrivacyPage() {
 
               <h2 className="text-2xl font-bold text-slate-100 mb-4">Disclosure of Personally Identifiable Information</h2>
               <ul className="text-slate-300 mb-6 space-y-2 list-disc list-inside">
-                <li><strong>Legal Compliance:</strong> We may disclose PII when required by law, to prevent fraud, or to protect the rights, property, or safety of Exponential LLC, our users, or others.</li>
+                <li><strong>Legal Compliance:</strong> We may disclose PII when required by law, to prevent fraud, or to protect the rights, property, or safety of Healthcare AI LLC, our users, or others.</li>
                 <li><strong>Marketing Communications:</strong> We may use your PII to send promotional offers unless you opt-out during registration. You can unsubscribe at any time.</li>
                 <li><strong>Service Providers:</strong> We may share your PII with third-party service providers who assist us with customer support, data analysis, order fulfillment, and website maintenance.</li>
                 <li><strong>Business Transitions:</strong> In the event of a business transaction, such as a merger, acquisition, or bankruptcy, your PII may be transferred to the successor organization.</li>
@@ -108,13 +108,13 @@ export default function PrivacyPage() {
                 If you have any questions or concerns about this Privacy Policy, please contact us:
               </p>
               <div className="bg-slate-800/50 rounded-lg p-6 mb-6">
-                <p className="text-slate-300 font-semibold">Exponential LLC</p>
+                <p className="text-slate-300 font-semibold">Healthcare AI LLC</p>
                 <p className="text-slate-400">34 Thames Blvd</p>
                 <p className="text-slate-400">Bergenfield, NJ 07621, USA</p>
-                <p className="text-slate-400">Email: support@exponentialplatform.com</p>
+                <p className="text-slate-400">Email: support@healthcareai.com</p>
               </div>
               <p className="text-slate-300">
-                Thank you for choosing Exponential LLC. We are committed to protecting your privacy and maintaining your trust while you use our Website and services.
+                Thank you for choosing Healthcare AI LLC. We are committed to protecting your privacy and maintaining your trust while you use our Website and services.
               </p>
             </div>
           </div>

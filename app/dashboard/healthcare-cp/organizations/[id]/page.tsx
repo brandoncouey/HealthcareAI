@@ -160,7 +160,7 @@ export default function OrganizationViewPage() {
             <h2 className="text-2xl font-bold text-slate-300 mb-2">Organization Not Found</h2>
             <p className="text-slate-400 mb-6">The organization you're looking for doesn't exist or you don't have permission to view it.</p>
             <Button 
-              onClick={() => router.push('/dashboard/exponential-cp')}
+              onClick={() => router.push('/dashboard/healthcare-cp')}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -222,7 +222,7 @@ export default function OrganizationViewPage() {
           <div className="flex items-center space-x-4 mb-6">
             <Button
               variant="outline"
-              onClick={() => router.push('/dashboard/exponential-cp')}
+              onClick={() => router.push('/dashboard/healthcare-cp')}
               className="border-slate-600/50 text-slate-300 hover:bg-slate-700/50 hover:text-white"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -250,7 +250,7 @@ export default function OrganizationViewPage() {
           <div className="flex items-center space-x-3">
             <Button 
               className="bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={() => router.push(`/dashboard/exponential-cp/organizations/${organizationId}/edit`)}
+              onClick={() => router.push(`/dashboard/healthcare-cp/organizations/${organizationId}/edit`)}
             >
               <Edit className="mr-2 h-4 w-4" />
               Edit Organization

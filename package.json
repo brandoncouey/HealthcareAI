@@ -1,9 +1,9 @@
 {
-  "name": "exponential-ai-tech",
+  "name": "healthcare-ai-tech",
   "version": "1.0.0",
   "private": true,
   "description": "AI-powered healthcare management platform for post-acute care operators",
-  "author": "Exponential AI Team",
+  "author": "Healthcare AI Team",
   "license": "MIT",
   "scripts": {
     "dev": "next dev",

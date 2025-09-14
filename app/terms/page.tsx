@@ -32,12 +32,12 @@ export default function TermsOfServicePage() {
             <div className="prose prose-invert max-w-none">
               <h2 className="text-2xl font-bold text-slate-100 mb-4">1. Introduction</h2>
               <p className="text-slate-300 mb-6">
-                Welcome to Exponential Platform's services. These Terms of Service ("Terms") govern your use of our services, including our triage software and related features ("Services"). By using our Services, you agree to these Terms.
+                Welcome to Healthcare AI Platform's services. These Terms of Service ("Terms") govern your use of our services, including our triage software and related features ("Services"). By using our Services, you agree to these Terms.
               </p>
 
               <h2 className="text-2xl font-bold text-slate-100 mb-4">2. Definitions</h2>
               <ul className="text-slate-300 mb-6 space-y-2 list-disc list-inside">
-                <li>"We," "us," and "our" refer to Exponential Platform Inc.</li>
+                <li>"We," "us," and "our" refer to Healthcare AI Platform Inc.</li>
                 <li>"You" and "your" refer to the organization or entity using our Services</li>
                 <li>"Authorized Users" means your employees, consultants, and agents who are authorized to use the Services</li>
                 <li>"Customer Data" means any information or content you or your Authorized Users submit through the Services</li>
@@ -164,10 +164,10 @@ export default function TermsOfServicePage() {
                 For questions about these Terms, contact us at:
               </p>
               <div className="bg-slate-800/50 rounded-lg p-6 mb-6">
-                <p className="text-slate-300 font-semibold">Exponential Platform Inc.</p>
+                <p className="text-slate-300 font-semibold">Healthcare AI Platform Inc.</p>
                 <p className="text-slate-400">34 Thames Boulevard</p>
                 <p className="text-slate-400">Bergenfield, NJ 07621</p>
-                <p className="text-slate-400">Email: daniel@exponentialplatform.com</p>
+                <p className="text-slate-400">Email: daniel@healthcareai.com</p>
               </div>
               <p className="text-slate-300">
                 By using our Services, you acknowledge that you have read and agree to these Terms.

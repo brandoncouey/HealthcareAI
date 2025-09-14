@@ -1,6 +1,6 @@
 # Healthcare Dashboard Setup Guide
 
-This guide will help you set up the new healthcare dashboard with real database data for your Exponential AI Tech platform.
+This guide will help you set up the new healthcare dashboard with real database data for your Healthcare AI Tech platform.
 
 ## Overview
 

@@ -152,7 +152,9 @@ export default function RegisterForm() {
 
       {/* Logo */}
       <div className="text-center mb-8">
-        <Image src="/x-symbol.png" alt="Exponential" width={60} height={60} className="mx-auto mb-4"/>
+        <div className="mx-auto w-16 h-16 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center">
+          <span className="text-white font-bold text-xl">HA</span>
+        </div>
       </div>
 
       {/* Success Message */}

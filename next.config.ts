@@ -1,7 +1,7 @@
 /**
  * Next.js Configuration
  * 
- * Configuration for the Exponential AI platform.
+ * Configuration for the Healthcare AI platform.
  * Includes webpack settings, image optimization, and performance settings.
  */
 

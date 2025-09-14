@@ -9,7 +9,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <title>Exponential AI - Healthcare Platform</title>
+        <title>Healthcare AI - Healthcare Platform</title>
       </head>
       <body className="antialiased">
         {children}

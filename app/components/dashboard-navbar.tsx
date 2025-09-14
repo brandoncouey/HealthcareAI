@@ -117,13 +117,9 @@ export default function DashboardNavbar({
                      {/* Logo */}
            <div className="flex items-center">
              <a href="/dashboard" className="relative group">
-               <Image 
-                 src="/logo.svg" 
-                 alt="Exponential AI Tech Logo" 
-                 width={40} 
-                 height={40} 
-                 className="h-10 w-auto group-hover:scale-105 transition-transform duration-300"
-               />
+               <div className="h-10 w-auto px-3 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg group-hover:scale-105 transition-transform duration-300">
+                 <span className="text-white font-bold text-sm">Healthcare AI</span>
+               </div>
                <div className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl group-hover:from-cyan-500/30 group-hover:to-blue-500/30 transition-all duration-300"></div>
              </a>
            </div>
@@ -274,13 +270,13 @@ export default function DashboardNavbar({
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-slate-700/50" />
                   
-                  {/* ExponentialCP - Only for global SUPERADMIN/ADMIN roles */}
+                  {/* HealthcareCP - Only for global SUPERADMIN/ADMIN roles */}
                   {(user?.role === 'SUPERADMIN' || user?.role === 'ADMIN') && (
                     <>
                       <DropdownMenuItem asChild className="text-slate-200 hover:bg-slate-800/80 hover:text-cyan-300 cursor-pointer transition-all duration-200 px-4 py-3 mx-2 my-1 rounded-lg">
-                        <Link href="/dashboard/exponential-cp" className="flex items-center w-full">
+                        <Link href="/dashboard/healthcare-cp" className="flex items-center w-full">
                           <Shield className="mr-2 h-4 w-4" />
-                          ExponentialCP
+                          HealthcareCP
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className="bg-slate-700/50" />

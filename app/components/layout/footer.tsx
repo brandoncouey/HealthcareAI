@@ -12,13 +12,9 @@ export default function Footer() {
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center mb-2">
-              <Image
-                src="/logo.svg"
-                alt="Exponential AI"
-                width={220}
-                height={120}
-                className="w-55 h-auto"
-              />
+              <div className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg">
+                <span className="text-white font-bold text-lg">Healthcare AI</span>
+              </div>
             </div>
             <p className="text-slate-400 mb-4 max-w-md">
               AI-powered healthcare management solutions designed for post-acute care operators.
@@ -68,10 +64,10 @@ export default function Footer() {
               </p>
               <p>
                 <a 
-                  href="mailto:info@exponentialplatform.com" 
+                  href="mailto:info@healthcareai.com" 
                   className="text-slate-400 hover:text-white transition-colors"
                 >
-                  info@exponentialplatform.com
+                  info@healthcareai.com
                 </a>
               </p>
               <p>
@@ -91,7 +87,7 @@ export default function Footer() {
 
         <div className="border-t border-slate-800/30 mt-4 pt-4 text-center">
           <p className="text-slate-400">
-            © 2025 Exponential. All rights reserved.
+            © 2025 Healthcare AI. All rights reserved.
           </p>
         </div>
       </div>

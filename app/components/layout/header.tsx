@@ -22,13 +22,9 @@ export default function Header({ showSignIn = true, showBookDemo = true }: Heade
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <Image
-              src="/logo.svg"
-              alt="Exponential AI"
-              width={160}
-              height={160}
-              className="w-40 h-auto"
-            />
+            <div className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg">
+              <span className="text-white font-bold text-xl">Healthcare AI</span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}

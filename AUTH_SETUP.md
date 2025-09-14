@@ -1,6 +1,6 @@
 # Authentication System Setup Guide
 
-> Complete authentication system implementation using NextAuth.js with credentials provider, password hashing, and protected routes for the Exponential AI Tech Platform.
+> Complete authentication system implementation using NextAuth.js with credentials provider, password hashing, and protected routes for the Healthcare AI Tech Platform.
 
 [![NextAuth.js](https://img.shields.io/badge/NextAuth.js-4.24-000000?style=for-the-badge&logo=next.js)](https://next-auth.js.org/)
 [![bcryptjs](https://img.shields.io/badge/bcryptjs-3.0-00D4AA?style=for-the-badge)](https://github.com/dcodeIO/bcrypt.js/)
@@ -25,7 +25,7 @@
 
 ## Overview
 
-The Exponential AI Tech Platform implements a robust authentication system using NextAuth.js with a credentials provider. This system provides secure user registration, login, session management, and route protection for healthcare applications.
+The Healthcare AI Tech Platform implements a robust authentication system using NextAuth.js with a credentials provider. This system provides secure user registration, login, session management, and route protection for healthcare applications.
 
 ### Key Benefits
 
@@ -204,7 +204,7 @@ NEXTAUTH_SECRET="your-secure-secret-key-here"
 NEXTAUTH_URL="http://localhost:3000"
 
 # Database Configuration
-DATABASE_URL="postgresql://username:password@localhost:5432/exponential_db"
+DATABASE_URL="postgresql://username:password@localhost:5432/healthcare_db"
 
 # Additional Configuration
 NODE_ENV="development"
@@ -540,4 +540,4 @@ EMAIL_SERVER_PASSWORD="your-email-password"
 
 **Built with NextAuth.js and modern security practices for healthcare applications.**
 
-*Exponential AI Tech Platform - Secure Authentication for Healthcare*
+*Healthcare AI Tech Platform - Secure Authentication for Healthcare*

@@ -60,7 +60,7 @@ export default function VideoModal() {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-700/30">
           <h3 className="text-xl font-semibold text-slate-100">
-            Exponential Triage Demo
+            Healthcare AI Demo
           </h3>
           <button
             onClick={() => setIsOpen(false)}
@@ -80,7 +80,7 @@ export default function VideoModal() {
             playsInline
           >
             <source 
-              src="https://s3.us-east-1.wasabisys.com/exponential-care/exponential-triage-promo-05-02-25.mp4" 
+              src="https://s3.us-east-1.wasabisys.com/healthcare-ai/healthcare-ai-demo-05-02-25.mp4" 
               type="video/mp4" 
             />
             Your browser does not support the video tag.

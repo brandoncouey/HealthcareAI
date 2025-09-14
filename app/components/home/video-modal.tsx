@@ -31,7 +31,7 @@ export default function VideoModal() {
         </button>
         <iframe
           src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
-          title="Exponential AI Demo"
+          title="Healthcare AI Demo"
           className="w-full h-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
